@@ -24,6 +24,7 @@ import Amelie.Model
 import Amelie.Model.Announcer
 
 import Control.Applicative    ((<$>),(<|>))
+import Control.Exception as E
 import Control.Monad
 import Control.Monad.Env
 import Control.Monad.IO
@@ -148,17 +149,18 @@ validNick s = first && all ok s && length s > 0 where
 
 -- | Get hints for a Haskell paste from hlint.
 generateHintsForPaste :: PasteSubmit -> PasteId -> Model [Suggestion]
-generateHintsForPaste PasteSubmit{..} (fromIntegral -> pid :: Integer) =
-  generateHints (show pid) pasteSubmitPaste
+generateHintsForPaste PasteSubmit{..} (fromIntegral -> pid :: Integer) = io $
+  E.catch (generateHints (show pid) pasteSubmitPaste)
+          (\(SomeException e) -> return [])
 
 -- | Get hints for a Haskell paste from hlint.
-generateHints :: FilePath -> Text -> Model [Suggestion]
+generateHints :: FilePath -> Text -> IO [Suggestion]
 generateHints pid contents = io $ do
   tmpdir <- getTemporaryDirectory
   let tmp = tmpdir </> pid ++ ".hs"
   exists <- doesFileExist tmp
   unless exists $ T.writeFile tmp $ contents
-  hints <- hlint [tmp,"--quiet","--ignore=Parse error"]
+  !hints <- hlint [tmp,"--quiet","--ignore=Parse error"]
   return hints
 
 getHints :: PasteId -> Model [Hint]
