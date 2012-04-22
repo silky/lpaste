@@ -20,7 +20,7 @@ import qualified Text.Blaze.Html5.Attributes as A
 layoutPage :: Page -> Html
 layoutPage Page{..} = do
   docTypeHtml $ do
-    html $ do
+    H.head $ do
       meta ! A.httpEquiv "Content-Type" ! A.content "text/html; charset=UTF-8"
       link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href "/css/amelie.css"
       js "jquery.js"
