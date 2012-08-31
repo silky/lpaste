@@ -1,0 +1,4 @@
+cd /home/chris/amelie/
+mkdir log -p
+ulimit -m 5
+dist/build/amelie/amelie amelie.conf
