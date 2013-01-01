@@ -73,7 +73,7 @@ pasteSubmit pf@PasteFormlet{..} =
   PasteSubmit
     <$> pure (getPasteId pf)
     <*> req (textInput "title" "Title" editTitle)
-    <*> req (textInput "author" "Author" Nothing)
+    <*> defaulting "Anonymous Coward" (textInput "author" "Author" Nothing)
     <*> parse (traverse lookupLang)
               (opt (dropInput languages "language" "Language" (snd defChan)))
     <*> parse (traverse lookupChan)
@@ -81,7 +81,10 @@ pasteSubmit pf@PasteFormlet{..} =
     <*> req (areaInput "paste" "Paste" editContent)
     <*> opt (wrap (H.div ! aClass "spam") (textInput "email" "Email" Nothing))
 
-    where channels = options channelName channelName pfChannels
+    where defaulting def = fmap swap where
+    	    swap "" = def
+	    swap x  = x
+    	  channels = options channelName channelName pfChannels
           languages = options languageName languageTitle pfLanguages
           
           lookupLang slug = findOption ((==slug).languageName) pfLanguages languageId
