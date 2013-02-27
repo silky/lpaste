@@ -10,6 +10,8 @@ import Amelie.Types.Config
 
 import Data.ConfigFile
 import Database.PostgreSQL.Simple (ConnectInfo(..))
+import qualified Data.Text as T
+import Network.Mail.Mime
 
 getConfig :: FilePath -> IO Config
 getConfig conf = do
@@ -34,6 +36,9 @@ getConfig conf = do
         [ircDir]
           <- mapM (get c "IRC")
                   ["log_dir"]
+        [admin,siteaddy]
+          <- mapM (get c "ADDRESSES")
+	     	  ["admin","site_addy"]       
                   
         return Config {
            configAnnounce = Announcer user pass host (read port)
@@ -43,6 +48,8 @@ getConfig conf = do
          , configRepoURL = url
          , configStepevalPrelude = prelude
          , configIrcDir = ircDir
+	 , configAdmin = Address Nothing (T.pack admin)
+	 , configSiteAddy = Address Nothing (T.pack siteaddy)
          }
   case config of
     Left cperr -> error $ show cperr

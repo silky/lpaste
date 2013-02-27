@@ -6,6 +6,7 @@ module Amelie.Types.Config
        where
 
 import Database.PostgreSQL.Simple (ConnectInfo)
+import Network.Mail.Mime (Address)
 
 -- | Site-wide configuration.
 data Config = Config {
@@ -16,7 +17,9 @@ data Config = Config {
   , configRepoURL         :: String
   , configStepevalPrelude :: FilePath
   , configIrcDir          :: FilePath
-  } deriving (Show)
+  , configAdmin           :: Address
+  , configSiteAddy        :: Address
+  }
 
 -- | Announcer configuration.
 data Announcer = Announcer {

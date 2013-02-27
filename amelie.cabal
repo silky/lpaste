@@ -13,12 +13,12 @@ Cabal-version:       >=1.2
 
 Executable amelie
   Main-is:           Main.hs
-  Ghc-options:       -threaded -Wall -O2 -fforce-recomp -fno-warn-name-shadowing
+  Ghc-options:       -threaded -Wall -O2 -fno-warn-name-shadowing
   Hs-source-dirs:    src
   Build-depends:     
     -- Hard versions
     base                      >= 4     && < 5
-   ,pgsql-simple              >= 0.1.1
+   ,pgsql-simple              >= 0.1.2
    ,css                       >= 0.1
    ,named-formlet             >= 0.1
    -- Liberal versions
@@ -48,3 +48,4 @@ Executable amelie
    ,time
    ,transformers
    ,utf8-string
+   ,mime-mail

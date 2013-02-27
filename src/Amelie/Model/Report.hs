@@ -14,9 +14,14 @@ import Amelie.Types
 import Amelie.Model
 
 import Control.Monad
+import Control.Monad.Env
+import Control.Monad.IO
 import Data.Maybe
 import Data.Monoid.Operator ((++))
+import qualified Data.Text.Lazy as LT
+import qualified Data.Text as T
 import Prelude              hiding ((++))
+import Network.Mail.Mime
 
 -- | Get some paginated reports.
 getSomeReports :: Pagination -> Model [Report]
@@ -36,7 +41,7 @@ countReports = do
 
 -- | Create a new report.
 createReport :: ReportSubmit -> Model (Maybe ReportId)
-createReport ReportSubmit{..} = do
+createReport rs@ReportSubmit{..} = do
   res <- single ["INSERT INTO report"
                 ,"(paste,comments)"
                 ,"VALUES"
@@ -47,4 +52,19 @@ createReport ReportSubmit{..} = do
        	    ,"SET public = false"
 	    ,"WHERE id = ?"]
 	    (Only rsPaste)
+  sendReport rs
   return res
+
+sendReport ReportSubmit{..} = do
+  conf <- env modelStateConfig
+  _ <- io $ simpleMail (configAdmin conf)
+		       (configSiteAddy conf)
+		       (T.pack ("Paste reported: #" ++ show rsPaste))
+		       (LT.pack body)
+		       (LT.pack body)
+		       []
+  return ()
+
+  where body = 
+  	  "Paste " ++ show rsPaste ++ "\n\n" ++
+	  rsComments
