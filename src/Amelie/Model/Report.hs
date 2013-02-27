@@ -43,4 +43,8 @@ createReport ReportSubmit{..} = do
                 ,"(?,?)"
                 ,"returning id"]
                 (rsPaste,rsComments)
+  _ <- exec ["UPDATE paste"
+       	    ,"SET public = false"
+	    ,"WHERE id = ?"]
+	    (Only rsPaste)
   return res
