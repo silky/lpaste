@@ -138,8 +138,8 @@ pasteDetails pastes chans langs paste@Paste{..} =
       detail "Author" $ pasteAuthor
       detail "Language" $ showLanguage langs pasteLanguage
       detail "Channel" $ do showChannel chans pasteChannel
-                            " "
-                            showContextLink paste chans pasteChannel
+--                            " "
+--                            showContextLink paste chans pasteChannel
       detail "Created" $ showDateTime pasteDate
       detail "Raw" $ pasteRawLink paste $ ("View raw link" :: Text)
     clear
@@ -177,9 +177,9 @@ pasteNav langs pastes paste =
                      ("Diff" :: Text)
                 " - "
           stepsLink
-            | lang == Just "haskell" = do href ("/steps/" ++ show pid)
-                                               ("Steps" :: Text)
-                                          " - "
+            -- | lang == Just "haskell" = do href ("/steps/" ++ show pid)
+            --                                    ("Steps" :: Text)
+            --                               " - "
             | otherwise = return ()
           lang = pasteLanguage paste >>= (`lookup` ls)
           ls = map (languageId &&& languageName) langs

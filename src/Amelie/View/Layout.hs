@@ -63,6 +63,8 @@ wrap x = H.div ! aClass "wrap" $ x
 nav :: Html
 nav = do
   H.div ! aClass "nav" $ do
+    a ! A.href "mailto:chrisdone@gmail.com" $ "Contact/support"
+    " | "
     a ! A.href "/activity" $ "Changelog"
 
 -- | Page footer.
