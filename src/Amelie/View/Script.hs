@@ -19,7 +19,7 @@ import Prelude                       hiding ((++),max)
 script :: Text
 script = pack $ show $ snd $ evalHJScript $ do
   ready $ do
-    resizePage
+--    resizePage
     toggleHints
     togglePaste
 

@@ -61,6 +61,11 @@ layout = do
   classRule "logo" $ do
     margin "1em 0 1em 0"
     border "0"
+    background "url(/css/hpaste.png) no-repeat"
+    width "190px"
+    height "50px"
+    display "block"
+    textIndent "-999px"
   
   classRule "wrap" $ do
     margin "auto"
@@ -188,6 +193,7 @@ classRule = rule . (".amelie-" ++)
 highlighter :: CSS Rule
 highlighter = do
   diff
+
   classRule "steps" $ do
     marginTop "1em"
   classRule "steps-expr" $ do
