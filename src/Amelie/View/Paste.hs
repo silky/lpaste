@@ -148,7 +148,10 @@ pasteDetails revisions annotations chans langs paste =
     pasteNav langs annotations paste
     h2 $ toHtml $ fromStrict (pasteTitle paste)
     ul ! aClass "paste-specs" $ do
-      detail "Paste" $ pasteLink paste $ "#" ++ show (pasteId paste)
+      detail "Paste" $ do
+        pasteLink paste $ "#" ++ show (pasteId paste)
+	" "
+        linkToParent paste
       detail "Author(s)" $ do
         let authors | null revisions = map pasteAuthor [paste]
 	    	    | otherwise      = map pasteAuthor revisions
@@ -166,6 +169,15 @@ pasteDetails revisions annotations chans langs paste =
     where detail title content = do
             li $ do strong (title ++ ":"); toHtml content
 
+-- | Link to annotation/revision parents.
+linkToParent :: Paste -> Html
+linkToParent paste = do
+  case pasteType paste of
+    NormalPaste -> return ()
+    AnnotationOf pid -> do "(an annotation of "; pidLink pid; ")"
+    RevisionOf pid -> do "(a revision of "; pidLink pid; ")"
+
+-- | List the revisions of a paste.
 listRevisions :: Paste -> [Paste] -> Html
 listRevisions p [] = return ()
 listRevisions p [x] = revisionDetails p x
@@ -173,6 +185,7 @@ listRevisions p (x:y:xs) = do
   revisionDetails y x
   listRevisions p (y:xs)
 
+-- | List the details of a revision.
 revisionDetails :: Paste -> Paste -> Html
 revisionDetails paste revision = li $ do
   toHtml $ showDateTime (pasteDate revision)
@@ -184,15 +197,6 @@ revisionDetails paste revision = li $ do
       ("(diff)" :: Html)
   ": "
   toHtml (pasteTitle revision)
-
-showContextLink :: Paste -> [Channel] -> Maybe ChannelId -> Html
-showContextLink Paste{..} chans chid =
-  case chid >>= \chid -> find ((==chid).channelId) chans of
-    Nothing -> return ()
-    Just Channel{..} -> do
-      let uri = "/irc/" ++ T.unpack (T.dropWhile (=='#') channelName) ++
-                "/" ++ showIrcDateTime pasteDate ++ "/" ++ show pasteId
-      href uri ("Context in IRC" :: String)
 
 -- | Individual paste navigation.
 pasteNav :: [Language] -> [Paste] -> Paste -> Html
@@ -228,6 +232,10 @@ pasteContent revisions langs paste =
 -- | The href link to a paste.
 pasteLink :: ToHtml html => Paste -> html -> Html
 pasteLink Paste{..} inner = href ("/" ++ show pasteId) inner
+
+-- | The href link to a paste pid.
+pidLink :: PasteId -> Html
+pidLink pid = href ("/" ++ show pid) $ toHtml $ "#" ++ show pid
 
 -- | The href link to a paste.
 revisionLink :: ToHtml html => Paste -> html -> Html
