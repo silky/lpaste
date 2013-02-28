@@ -59,6 +59,6 @@ resetCache key = do
    when exists $ removeFile cachePath  
 
 keyToString :: Key -> String
-keyToString Home = "home"
-keyToString Activity = "activity"
-keyToString (Paste i) = "paste-" ++ show i
+keyToString Home = "home.html"
+keyToString Activity = "activity.html"
+keyToString (Paste i) = show i ++ ".html"
