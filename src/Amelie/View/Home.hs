@@ -12,34 +12,39 @@ import Amelie.Types
 import Amelie.View.Html
 import Amelie.View.Layout
 import Amelie.View.Paste  (pasteLink)
+import Amelie.Model.Paste (validNick)
 
 import Data.Text          (Text)
 import Data.Time.Show     (showDateTime)
 import Prelude            hiding ((++))
 import Text.Blaze.Html5   as H hiding (map)
+import qualified Data.Text as T
+import Text.Blaze.Extra
+import Network.URI.Params
+import Network.URI
 
 -- | Render the home page.
-page :: [Channel] -> [Language] -> [Paste] -> Html -> Html
-page chans langs ps form =
+page :: URI -> [Channel] -> [Language] -> [Paste] -> Html -> Html
+page uri chans langs ps form =
   layoutPage $ Page {
     pageTitle = "Recent pastes"
-  , pageBody = content chans langs ps form
+  , pageBody = content uri chans langs ps form
   , pageName = "home"
   }
 
 -- | Render the home page body.
-content :: [Channel] -> [Language] -> [Paste] -> Html -> Html
-content chans langs ps form = do
+content :: URI -> [Channel] -> [Language] -> [Paste] -> Html -> Html
+content uri chans langs ps form = do
   createNew form
-  latest chans langs ps
+  latest uri chans langs ps
 
 -- | Create a new paste section.
 createNew :: Html -> Html
 createNew = lightSection "Create new paste"
 
 -- | View the latest pastes.
-latest :: [Channel] -> [Language] -> [Paste] -> Html
-latest channels languages ps = do
+latest :: URI -> [Channel] -> [Language] -> [Paste] -> Html
+latest uri channels languages ps = do
   darkSection "Latest pastes" $ do
     table ! aClass "latest-pastes" $ do
       tr $ mapM_ (th . toHtml) $ words "Title Author When Language Channel"
@@ -48,11 +53,18 @@ latest channels languages ps = do
 
     where pastes = mapM_ $ \paste@Paste{..} -> tr $ do
                      td $ pasteLink paste pasteTitle
-                     td $ toHtml pasteAuthor
+                     td $ do
+                       let author = T.unpack pasteAuthor
+		       if validNick author
+		       	  then a ! hrefURI (authorUri author) $ toHtml pasteAuthor
+			  else toHtml pasteAuthor
                      td $ toHtml $ showDateTime $ pasteDate
                      td $ showLanguage languages pasteLanguage
                      td $ showChannel channels pasteChannel
-
+          authorUri author = updateUrlParam "author" author
+	  	    	   $ updateUrlParam "page"   "0"
+			   $ uri { uriPath = "/browse" }
+					    
 -- | Browse link.
 browse :: Html
 browse = href ("/browse" :: Text) ("Browse all pastes" :: Text)

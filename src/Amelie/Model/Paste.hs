@@ -16,7 +16,8 @@ module Amelie.Model.Paste
   ,getSomePastes
   ,countPublicPastes
   ,generateHints
-  ,getHints)
+  ,getHints
+  ,validNick)
   where
 
 import Amelie.Types

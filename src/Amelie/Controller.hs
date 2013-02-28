@@ -13,7 +13,8 @@ module Amelie.Controller
   ,getInteger
   ,getString
   ,getStringMaybe
-  ,getPagination)
+  ,getPagination
+  ,getMyURI)
   where
 
 import Amelie.Types
@@ -98,11 +99,12 @@ getPagination = do
                     , pnTotal = 0
                     }
 
+getMyURI :: Controller URI
 getMyURI = do
- domain <- env (configDomain . controllerStateConfig)
- fmap (fromJust .
-       parseURI .
-       (("http://" ++ domain) ++) .
-       toString .
-       rqURI)
-      getRequest
+  domain <- env (configDomain . controllerStateConfig)
+  fmap (fromJust .
+	parseURI .
+	(("http://" ++ domain) ++) .
+	toString .
+	rqURI)
+       getRequest

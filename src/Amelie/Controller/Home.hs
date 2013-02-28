@@ -7,7 +7,7 @@ module Amelie.Controller.Home
   (handle)
   where
 
-import Amelie.Controller       (outputText)
+import Amelie.Controller       (outputText,getMyURI)
 import Amelie.Controller.Cache (cache)
 import Amelie.Controller.Paste (pasteForm)
 import Amelie.Model
@@ -25,5 +25,6 @@ handle = do
     chans <- model $ getChannels
     langs <- model $ getLanguages
     form <- pasteForm chans langs Nothing Nothing
-    return $ Just $ page chans langs pastes form
+    uri <- getMyURI
+    return $ Just $ page uri chans langs pastes form
   maybe (return ()) outputText html

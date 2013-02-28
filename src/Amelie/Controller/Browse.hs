@@ -25,4 +25,4 @@ handle = do
                , pnTotal = total }
   chans <- model getChannels
   langs <- model getLanguages
-  output $ page pn' chans langs pastes
+  output $ page pn' chans langs pastes author
