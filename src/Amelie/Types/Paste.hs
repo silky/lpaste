@@ -7,6 +7,7 @@
 
 module Amelie.Types.Paste
        (Paste(..)
+       ,PasteType(..)
        ,PasteSubmit(..)
        ,PasteFormlet(..)
        ,ExprFormlet(..)
@@ -43,12 +44,20 @@ data Paste = Paste {
   ,pasteChannel  :: Maybe ChannelId
   ,pastePaste    :: Text
   ,pasteViews    :: Integer 
-  ,pasteParent   :: Maybe PasteId
+  ,pasteType     :: PasteType
 } deriving Show
+
+-- | The type of a paste.
+data PasteType
+  = NormalPaste
+  | AnnotationOf PasteId
+  | RevisionOf PasteId
+  deriving Show
 
 -- | A paste submission or annotate.
 data PasteSubmit = PasteSubmit {
    pasteSubmitId       :: Maybe PasteId
+  ,pasteSubmitType     :: PasteType
   ,pasteSubmitTitle    :: Text
   ,pasteSubmitAuthor   :: Text
   ,pasteSubmitLanguage :: Maybe LanguageId
@@ -70,9 +79,13 @@ instance QueryResults Paste where
     , pasteDate = zonedTimeToUTC date
     , pasteId = pid
     , pasteViews = views
-    , pasteParent = parent
+    , pasteType = case annotation_of of
+      Just pid -> AnnotationOf pid
+      _ -> case revision_of of
+        Just pid -> RevisionOf pid
+	_ -> NormalPaste
     }
-    where (pid,title,content,author,date,views,language,channel,parent) =
+    where (pid,title,content,author,date,views,language,channel,annotation_of,revision_of) =
             convertResults field values
 
 data PasteFormlet = PasteFormlet {

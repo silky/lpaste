@@ -65,6 +65,9 @@ pasteFormlet pf@PasteFormlet{..} =
     
   where action = case pfAnnotatePaste of
                    Just Paste{..} -> "/annotate/" ++ show (fromMaybe pasteId pasteParent)
+                       where pasteParent = case pasteType of
+                               AnnotationOf pid -> Just pid
+                               _ -> Nothing
                    Nothing        ->
                      case pfEditPaste of
 		       Just Paste{..} -> "/edit/" ++ show pasteId
@@ -75,13 +78,18 @@ pasteSubmit :: PasteFormlet -> Formlet PasteSubmit
 pasteSubmit pf@PasteFormlet{..} =
   PasteSubmit
     <$> pure (getPasteId pf)
+    <*> pure (case pfAnnotatePaste of
+    	       Just pid -> AnnotationOf (pasteId pid)
+	       _ -> case pfEditPaste of
+	         Just pid -> RevisionOf (pasteId pid)
+		 _ -> NormalPaste)
     <*> req (textInput "title" "Title" (annotateTitle <|> editTitle))
     <*> defaulting "Anonymous Coward" (textInput "author" "Author" Nothing)
     <*> parse (traverse lookupLang)
               (opt (dropInput languages "language" "Language" (snd defChan)))
     <*> parse (traverse lookupChan)
               (opt (dropInput channels "channel" "Channel" (fst defChan)))
-    <*> req (areaInput "paste" "Paste" annotateContent)
+    <*> req (areaInput "paste" "Paste" (annotateContent <|> editContent))
     <*> opt (wrap (H.div ! aClass "spam") (textInput "email" "Email" Nothing))
 
     where defaulting def = fmap swap where
@@ -127,10 +135,6 @@ viewAnnotations pastes chans langs annotations = do
 -- | View a paste's details and content.
 viewPaste :: [Paste] -> [Channel] -> [Language] -> (Paste,[Hint]) -> Html
 viewPaste pastes chans langs (paste@Paste{..},hints) = do
-  case pasteParent of
-    Nothing -> return ()
-    Just{}  -> let an = "a" ++ show (fromIntegral pasteId :: Integer)
-               in a ! A.name (toValue an) $ return ()
   pasteDetails pastes chans langs paste
   pasteContent langs paste
   viewHints hints

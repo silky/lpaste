@@ -15,6 +15,8 @@ import           Amelie.Model.Paste   (getPasteById)
 import           Amelie.Model.Report
 import           Amelie.View.Report
 import qualified Amelie.View.Thanks   as Thanks
+import Amelie.Types.Cache      as Key
+import Amelie.Controller.Cache (resetCache)
 
 import           Control.Applicative
 import           Data.ByteString.UTF8 (toString)
@@ -40,6 +42,7 @@ handle = do
         Just comment -> do
           _ <- model $ createReport ReportSubmit { rsPaste = fromIntegral pid
                                                  , rsComments = comment }
+          resetCache Key.Home
           output $ Thanks.page "Reported" $
                                "Thanks, your comments have " ++
                                "been reported to the administrator."

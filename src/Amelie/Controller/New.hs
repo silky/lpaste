@@ -33,13 +33,11 @@ handle style = do
   pid <- if style == NewPaste then return Nothing else getPasteId
   case pid of
     Just pid -> do
-      apaste <- if style == AnnotatePaste
-      	     	   then model $ getPasteById (fromIntegral pid)
-		   else return Nothing
-      epaste <- if style == EditPaste
-      	     	   then model $ getPasteById (fromIntegral pid)
-		   else return Nothing
-      let paste = apaste <|> epaste
+      paste <- model $ getPasteById (fromIntegral pid)
+      let apaste | style == AnnotatePaste = paste
+      	  	 | otherwise = Nothing
+      let epaste | style == EditPaste = paste
+      	  	 | otherwise = Nothing
       form <- pasteForm chans langs defChan apaste epaste
       justOrGoHome paste $ \paste -> do
         case style of

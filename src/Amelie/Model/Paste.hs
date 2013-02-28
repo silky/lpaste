@@ -10,7 +10,7 @@
 module Amelie.Model.Paste
   (getLatestPastes
   ,getPasteById
-  ,createOrAnnotate
+  ,createOrUpdate
   ,createPaste
   ,getAnnotations
   ,getSomePastes
@@ -87,8 +87,8 @@ getAnnotations pid =
         (Only pid)
 
 -- | Create a paste, or update an existing one.
-createOrAnnotate :: [Language] -> [Channel] -> PasteSubmit -> Model (Maybe PasteId)
-createOrAnnotate langs chans paste@PasteSubmit{..} = do
+createOrUpdate :: [Language] -> [Channel] -> PasteSubmit -> Model (Maybe PasteId)
+createOrUpdate langs chans paste@PasteSubmit{..} = do
   case pasteSubmitId of
     Nothing  -> createPaste langs chans paste
     Just pid -> do updatePaste pid paste
@@ -98,12 +98,12 @@ createOrAnnotate langs chans paste@PasteSubmit{..} = do
 createPaste :: [Language] -> [Channel] -> PasteSubmit -> Model (Maybe PasteId)
 createPaste langs chans ps@PasteSubmit{..} = do
   res <- single ["INSERT INTO paste"
-                ,"(title,author,content,channel,language,annotation_of)"
+                ,"(title,author,content,channel,language,annotation_of,revision_of)"
                 ,"VALUES"
-                ,"(?,?,?,?,?,?)"
+                ,"(?,?,?,?,?,?,?)"
                 ,"returning id"]
                 (pasteSubmitTitle,pasteSubmitAuthor,pasteSubmitPaste
-                ,pasteSubmitChannel,pasteSubmitLanguage,pasteSubmitId)
+                ,pasteSubmitChannel,pasteSubmitLanguage,ann_pid,rev_pid)
   when (lang == Just "haskell") $ just res $ createHints ps
   just (pasteSubmitChannel >>= lookupChan) $ \chan ->
     just res $ \pid -> do
@@ -115,6 +115,8 @@ createPaste langs chans ps@PasteSubmit{..} = do
         lookupLang lid = find ((==lid).languageId) langs
         lang = pasteSubmitLanguage >>= (fmap languageName . lookupLang)
         just j m = maybe (return ()) m j
+        ann_pid = case pasteSubmitType of AnnotationOf pid -> Just pid; _ -> Nothing
+        rev_pid = case pasteSubmitType of RevisionOf pid -> Just pid; _ -> Nothing
 
 -- | Create the hints for a paste.
 createHints :: PasteSubmit -> PasteId -> Model ()
@@ -192,5 +194,5 @@ updatePaste pid PasteSubmit{..} = do
             ,pid)
   return ()
   
-    where fields = "title author content channel language"
+    where fields = "title author content language channel"
           set key = unwords [key,"=","?"]
