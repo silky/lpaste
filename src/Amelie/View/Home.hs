@@ -55,7 +55,7 @@ latest uri channels languages ps = do
                      td $ pasteLink paste pasteTitle
                      td $ do
                        let author = T.unpack pasteAuthor
-		       if validNick author
+		       if True -- validNick author
 		       	  then a ! hrefURI (authorUri author) $ toHtml pasteAuthor
 			  else toHtml pasteAuthor
                      td $ toHtml $ showDateTime $ pasteDate

@@ -49,7 +49,7 @@ browse pn channels languages ps mauthor = do
                      unless (isJust mauthor) $
                        td $ do
 			 let author = T.unpack pasteAuthor
-			 if validNick author
+			 if True -- validNick author
 			    then a ! hrefURI (authorUri author) $ toHtml pasteAuthor
 			    else toHtml pasteAuthor
                      td $ toHtml $ showDateTime $ pasteDate

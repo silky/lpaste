@@ -6,12 +6,14 @@ module Amelie.Controller.Cache
        (newCache
        ,cache
        ,cacheIf
-       ,resetCache)
+       ,resetCache
+       ,resetCacheModel) 
        where
  
 import           Amelie.Types (Controller,ControllerState(..))
 import           Amelie.Types.Cache
 import           Amelie.Types.Config
+import           Amelie.Types.MVC
 
 import           Control.Concurrent
 import           Control.Monad.IO         (io)
@@ -58,6 +60,15 @@ cache key generate = do
 resetCache :: Key -> Controller ()
 resetCache key = do
   tmpdir <- asks (configCacheDir . controllerStateConfig)
+  io $ do
+   let cachePath = tmpdir ++ "/" ++ keyToString key
+   exists <- io $ doesFileExist cachePath
+   when exists $ removeFile cachePath  
+
+-- | Reset an item in the cache.
+resetCacheModel :: Key -> Model ()
+resetCacheModel key = do
+  tmpdir <- asks (configCacheDir . modelStateConfig)
   io $ do
    let cachePath = tmpdir ++ "/" ++ keyToString key
    exists <- io $ doesFileExist cachePath

@@ -12,8 +12,11 @@ module Amelie.Model.Report
 
 import Amelie.Types
 import Amelie.Model
+import Amelie.Controller.Cache
+import Amelie.Types.Cache as Key
 
 import Control.Monad
+import Control.Monad.Trans
 import Control.Monad.Env
 import Control.Monad.IO
 import Data.Maybe
@@ -52,6 +55,10 @@ createReport rs@ReportSubmit{..} = do
        	    ,"SET public = false"
 	    ,"WHERE id = ?"]
 	    (Only rsPaste)
+  let reset pid = do
+        resetCacheModel (Key.Paste (fromIntegral pid))
+        resetCacheModel (Key.Revision (fromIntegral pid))
+  reset rsPaste
   sendReport rs
   return res
 

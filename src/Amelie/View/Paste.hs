@@ -156,7 +156,7 @@ pasteDetails revisions annotations chans langs paste =
         let authors | null revisions = map pasteAuthor [paste]
 	    	    | otherwise      = map pasteAuthor revisions
         htmlCommasAnd $ flip map (nub authors) $ \author ->
-	  href ("/browse?author=" ++ author) $ toHtml author
+	  linkAuthor author
       detail "Language" $ showLanguage langs (pasteLanguage paste)
       detail "Channel" $ do showChannel chans (pasteChannel paste)
       detail "Created" $ showDateTime (pasteDate paste)
@@ -168,6 +168,10 @@ pasteDetails revisions annotations chans langs paste =
 
     where detail title content = do
             li $ do strong (title ++ ":"); toHtml content
+
+-- | Link to an author.
+linkAuthor :: Text -> Html
+linkAuthor author = href ("/browse?author=" ++ author) $ toHtml author
 
 -- | Link to annotation/revision parents.
 linkToParent :: Paste -> Html
@@ -197,6 +201,9 @@ revisionDetails paste revision = li $ do
       ("(diff)" :: Html)
   ": "
   toHtml (pasteTitle revision)
+  " ("
+  linkAuthor (pasteAuthor revision)
+  ")"
 
 -- | Individual paste navigation.
 pasteNav :: [Language] -> [Paste] -> Paste -> Html
