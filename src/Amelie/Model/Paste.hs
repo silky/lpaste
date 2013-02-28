@@ -10,7 +10,7 @@
 module Amelie.Model.Paste
   (getLatestPastes
   ,getPasteById
-  ,createOrEdit
+  ,createOrAnnotate
   ,createPaste
   ,getAnnotations
   ,getSomePastes
@@ -87,14 +87,14 @@ getAnnotations pid =
         (Only pid)
 
 -- | Create a paste, or update an existing one.
-createOrEdit :: [Language] -> [Channel] -> PasteSubmit -> Model (Maybe PasteId)
-createOrEdit langs chans paste@PasteSubmit{..} = do
+createOrAnnotate :: [Language] -> [Channel] -> PasteSubmit -> Model (Maybe PasteId)
+createOrAnnotate langs chans paste@PasteSubmit{..} = do
   case pasteSubmitId of
     Nothing  -> createPaste langs chans paste
     Just pid -> do updatePaste pid paste
                    return $ Just pid
 
--- | Create a new paste (possibly editing an existing one).
+-- | Create a new paste (possibly annotating an existing one).
 createPaste :: [Language] -> [Channel] -> PasteSubmit -> Model (Maybe PasteId)
 createPaste langs chans ps@PasteSubmit{..} = do
   res <- single ["INSERT INTO paste"

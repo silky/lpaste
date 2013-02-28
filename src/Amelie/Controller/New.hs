@@ -13,7 +13,7 @@ import Amelie.Model
 import Amelie.Model.Channel    (getChannels)
 import Amelie.Model.Language   (getLanguages)
 import Amelie.Model.Paste      (getPasteById)
-import Amelie.View.Edit        as Edit (page)
+import Amelie.View.Annotate        as Annotate (page)
 import Amelie.View.New         as New (page)
 
 import Control.Applicative
@@ -32,7 +32,7 @@ handle = do
       paste <- model $ getPasteById (fromIntegral pid)
       form <- pasteForm chans langs defChan paste
       justOrGoHome paste $ \paste -> do
-        output $ Edit.page paste form
+        output $ Annotate.page paste form
     Nothing -> do
       form <- pasteForm chans langs defChan Nothing
       output $ New.page form

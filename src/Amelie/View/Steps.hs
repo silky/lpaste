@@ -54,7 +54,7 @@ stepsForm form =
     div ! aClass "steps-expr" $
       form
 
--- | A formlet for expr submission / editing.
+-- | A formlet for expr submission / annotating.
 exprFormlet :: ExprFormlet -> (Formlet Text,Html)
 exprFormlet ExprFormlet{..} =
   let frm = form $ do

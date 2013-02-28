@@ -62,9 +62,9 @@ handle = do
             }
       justOrGoHome html outputText
 
--- | Control paste editing / submission.
+-- | Control paste annotating / submission.
 pasteForm :: [Channel] -> [Language] -> Maybe Text -> Maybe Paste -> Controller Html
-pasteForm channels languages defChan editPaste = do
+pasteForm channels languages defChan annotatePaste = do
   params <- getParams
   submitted <- isJust <$> getParam "submit"
   let formlet = PasteFormlet {
@@ -74,7 +74,7 @@ pasteForm channels languages defChan editPaste = do
         , pfChannels  = channels
         , pfLanguages = languages
         , pfDefChan   = defChan
-        , pfEditPaste = editPaste
+        , pfAnnotatePaste = annotatePaste
         }
       (getValue,_) = pasteFormlet formlet
       value = formletValue getValue params

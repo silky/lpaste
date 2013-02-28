@@ -70,7 +70,7 @@ pasteContent paste =
   lightNoTitleSection $
     highlightHaskell paste
 
--- | A formlet for report submission / editing.
+-- | A formlet for report submission / annotating.
 reportFormlet :: ReportFormlet -> (Formlet Text,Html)
 reportFormlet ReportFormlet{..} =
   let frm = form $ do

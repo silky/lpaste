@@ -59,7 +59,7 @@ serve conf p cache ans = route routes where
            ,("/report/:id",run Report.handle)
            ,("/reported",run Reported.handle)
            ,("/new",run New.handle)
-           ,("/edit/:id",run New.handle)
+           ,("/annotate/:id",run New.handle)
            ,("/new/:channel",run New.handle)
            ,("/browse",run Browse.handle)
            ,("/activity",run Activity.handle)

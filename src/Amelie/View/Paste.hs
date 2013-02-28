@@ -51,7 +51,7 @@ page PastePage {ppPaste=p@Paste{..},..} =
   , pageName = "paste"
   }
   
--- | A formlet for paste submission / editing.
+-- | A formlet for paste submission / annotateing.
 pasteFormlet :: PasteFormlet -> (Formlet PasteSubmit,Html)
 pasteFormlet pf@PasteFormlet{..} =
   let form = postForm ! A.action (toValue action) $ do
@@ -63,8 +63,8 @@ pasteFormlet pf@PasteFormlet{..} =
         submitInput "submit" "Submit"
   in (pasteSubmit pf,form)
     
-  where action = case pfEditPaste of
-                   Just Paste{..} -> "/edit/" ++ show (fromMaybe pasteId pasteParent)
+  where action = case pfAnnotatePaste of
+                   Just Paste{..} -> "/annotate/" ++ show (fromMaybe pasteId pasteParent)
                    Nothing        -> "/new"
 
 -- | The paste submitting formlet itself.
@@ -72,13 +72,13 @@ pasteSubmit :: PasteFormlet -> Formlet PasteSubmit
 pasteSubmit pf@PasteFormlet{..} =
   PasteSubmit
     <$> pure (getPasteId pf)
-    <*> req (textInput "title" "Title" editTitle)
+    <*> req (textInput "title" "Title" annotateTitle)
     <*> defaulting "Anonymous Coward" (textInput "author" "Author" Nothing)
     <*> parse (traverse lookupLang)
               (opt (dropInput languages "language" "Language" (snd defChan)))
     <*> parse (traverse lookupChan)
               (opt (dropInput channels "channel" "Channel" (fst defChan)))
-    <*> req (areaInput "paste" "Paste" editContent)
+    <*> req (areaInput "paste" "Paste" annotateContent)
     <*> opt (wrap (H.div ! aClass "spam") (textInput "email" "Email" Nothing))
 
     where defaulting def = fmap swap where
@@ -90,16 +90,16 @@ pasteSubmit pf@PasteFormlet{..} =
           lookupLang slug = findOption ((==slug).languageName) pfLanguages languageId
           lookupChan slug = findOption ((==slug).channelName) pfChannels channelId
           
-          defChan = maybe (fromMaybe "" editChan,fromMaybe "haskell" editLanguage)
+          defChan = maybe (fromMaybe "" annotateChan,fromMaybe "haskell" annotateLanguage)
                           (channelName &&& trim.channelName)
                           (pfDefChan >>= findChan)
           findChan name = find ((==name).trim.channelName) pfChannels
           trim = T.dropWhile (=='#')
           
-          editContent = pastePaste <$> pfEditPaste
-          editTitle = ((++ " (annotation)") . pasteTitle) <$> pfEditPaste
-          editLanguage = join (fmap pasteLanguage pfEditPaste) >>= findLangById
-          editChan = join (fmap pasteChannel pfEditPaste) >>= findChanById
+          annotateContent = pastePaste <$> pfAnnotatePaste
+          annotateTitle = ((++ " (annotation)") . pasteTitle) <$> pfAnnotatePaste
+          annotateLanguage = join (fmap pasteLanguage pfAnnotatePaste) >>= findLangById
+          annotateChan = join (fmap pasteChannel pfAnnotatePaste) >>= findChanById
 
           findChanById id = channelName <$> find ((==id).channelId) pfChannels
           findLangById id = languageName <$> find ((==id).languageId) pfLanguages
@@ -162,7 +162,7 @@ pasteNav langs pastes paste =
   H.div ! aClass "paste-nav" $ do
     diffLink
     stepsLink
-    href ("/edit/" ++ pack (show pid) ++ "") ("Annotate" :: Text)
+    href ("/annotate/" ++ pack (show pid) ++ "") ("Annotate" :: Text)
     " - "
     href ("/report/" ++ pack (show pid) ++ "") ("Report/Delete" :: Text)
     

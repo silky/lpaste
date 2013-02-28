@@ -46,7 +46,7 @@ data Paste = Paste {
   ,pasteParent   :: Maybe PasteId
 } deriving Show
 
--- | A paste submission or edit.
+-- | A paste submission or annotate.
 data PasteSubmit = PasteSubmit {
    pasteSubmitId       :: Maybe PasteId
   ,pasteSubmitTitle    :: Text
@@ -82,7 +82,7 @@ data PasteFormlet = PasteFormlet {
  , pfLanguages :: [Language]
  , pfChannels  :: [Channel]
  , pfDefChan   :: Maybe Text
- , pfEditPaste :: Maybe Paste
+ , pfAnnotatePaste :: Maybe Paste
 }
 
 data ExprFormlet = ExprFormlet {
