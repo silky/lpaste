@@ -15,7 +15,7 @@ module Amelie.Controller.Paste
 import Amelie.Types
 
 import Amelie.Controller
-import Amelie.Controller.Cache (cache,resetCache)
+import Amelie.Controller.Cache (cache,cacheIf,resetCache)
 import Amelie.Model
 import Amelie.Model.Channel    (getChannels)
 import Amelie.Model.Language   (getLanguages)
@@ -38,27 +38,32 @@ import Text.Blaze.Html5        as H hiding (output)
 import Text.Formlet
 
 -- | Handle the paste page.
-handle :: Controller ()
-handle = do
+handle :: Bool -> Controller ()
+handle revision = do
   pid <- getPasteId
   justOrGoHome pid $ \(pid :: Integer) -> do
-      html <- cache (Key.Paste pid) $ do
+      html <- cache (if revision then Key.Revision pid else Key.Paste pid) $ do
         paste <- model $ getPasteById (fromIntegral pid)
         case paste of
           Nothing -> return Nothing
           Just paste -> do
             hints <- model $ getHints (pasteId paste)
-            pastes <- model $ getAnnotations (fromIntegral pid)
-            ahints <- model $ mapM (getHints.pasteId) pastes
+            annotations <- model $ getAnnotations (fromIntegral pid)
+            revisions <- model $ getRevisions (fromIntegral pid)
+            ahints <- model $ mapM (getHints.pasteId) annotations
+            rhints <- model $ mapM (getHints.pasteId) revisions
             chans <- model $ getChannels
             langs <- model $ getLanguages
             return $ Just $ page PastePage {
               ppChans       = chans
             , ppLangs       = langs
-            , ppAnnotations = pastes
+            , ppAnnotations = annotations
+            , ppRevisions   = revisions
             , ppHints       = hints
             , ppPaste       = paste
             , ppAnnotationHints = ahints
+            , ppRevisionsHints = rhints
+	    , ppRevision = revision
             }
       justOrGoHome html outputText
 
@@ -67,6 +72,7 @@ pasteForm :: [Channel] -> [Language] -> Maybe Text -> Maybe Paste -> Maybe Paste
 pasteForm channels languages defChan annotatePaste editPaste = do
   params <- getParams
   submitted <- isJust <$> getParam "submit"
+  revisions <- maybe (return []) (model . getRevisions) (fmap pasteId (annotatePaste <|> editPaste))
   let formlet = PasteFormlet {
           pfSubmitted = submitted
         , pfErrors    = []
@@ -76,6 +82,7 @@ pasteForm channels languages defChan annotatePaste editPaste = do
         , pfDefChan   = defChan
         , pfAnnotatePaste = annotatePaste
         , pfEditPaste = editPaste
+	, pfContent = fmap pastePaste (listToMaybe revisions)
         }
       (getValue,_) = pasteFormlet formlet
       value = formletValue getValue params

@@ -13,6 +13,7 @@ module Amelie.Model.Paste
   ,createOrUpdate
   ,createPaste
   ,getAnnotations
+  ,getRevisions
   ,getSomePastes
   ,countPublicPastes
   ,generateHints
@@ -85,6 +86,15 @@ getAnnotations pid =
         ,"WHERE annotation_of = ?"
         ,"ORDER BY id ASC"]
         (Only pid)
+
+-- | Get revisions of a paste.
+getRevisions :: PasteId -> Model [Paste]
+getRevisions pid = do
+  query ["SELECT *"
+        ,"FROM public_paste"
+        ,"WHERE revision_of = ? or id = ?"
+        ,"ORDER BY id DESC"]
+        (pid,pid)
 
 -- | Create a paste, or update an existing one.
 createOrUpdate :: [Language] -> [Channel] -> PasteSubmit -> Model (Maybe PasteId)

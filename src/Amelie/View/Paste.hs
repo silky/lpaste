@@ -20,7 +20,7 @@ import           Amelie.View.Layout
 
 import           Control.Applicative       
 import           Control.Arrow               ((&&&))
-import           Control.Monad               (when,join)
+import           Control.Monad               
 import           Data.ByteString.UTF8        (toString)
 import           Data.List                   (find)
 import qualified Data.Map                    as M
@@ -31,19 +31,21 @@ import qualified Data.Text                   as T
 import           Data.Text.Lazy              (fromStrict)
 import           Data.Time.Show              (showDateTime)
 import           Data.Traversable
+import           Numeric
 import           Prelude                     hiding ((++))
 import           Safe                        (readMay)
 import           Text.Blaze.Html5            as H hiding (map)
 import qualified Text.Blaze.Html5.Attributes as A
 import           Text.Blaze.Html5.Extra
+import           Text.Blaze.Extra
 import           Text.Formlet
 
 -- | Render the page page.
 page :: PastePage -> Html
-page PastePage {ppPaste=p@Paste{..},..} =
+page PastePage{ppPaste=p@Paste{..},..} =
   layoutPage $ Page {
     pageTitle = pasteTitle
-  , pageBody = do viewPaste [] ppChans ppLangs (p,ppHints)
+  , pageBody = do viewPaste (if ppRevision then [] else ppRevisions) [] ppChans ppLangs (p,ppHints)
                   viewAnnotations (p : ppAnnotations)
                                   ppChans
                                   ppLangs
@@ -89,7 +91,7 @@ pasteSubmit pf@PasteFormlet{..} =
               (opt (dropInput languages "language" "Language" (snd defChan)))
     <*> parse (traverse lookupChan)
               (opt (dropInput channels "channel" "Channel" (fst defChan)))
-    <*> req (areaInput "paste" "Paste" (annotateContent <|> editContent))
+    <*> req (areaInput "paste" "Paste" pfContent)
     <*> opt (wrap (H.div ! aClass "spam") (textInput "email" "Email" Nothing))
 
     where defaulting def = fmap swap where
@@ -130,34 +132,47 @@ getPasteId PasteFormlet{..} =
 -- | View the paste's annotations.
 viewAnnotations :: [Paste] -> [Channel] -> [Language] -> [(Paste,[Hint])] -> Html
 viewAnnotations pastes chans langs annotations = do
-  mapM_ (viewPaste pastes chans langs) annotations
+  mapM_ (viewPaste [] pastes chans langs) annotations
 
 -- | View a paste's details and content.
-viewPaste :: [Paste] -> [Channel] -> [Language] -> (Paste,[Hint]) -> Html
-viewPaste pastes chans langs (paste@Paste{..},hints) = do
-  pasteDetails pastes chans langs paste
-  pasteContent langs paste
+viewPaste :: [Paste] -> [Paste] -> [Channel] -> [Language] -> (Paste,[Hint]) -> Html
+viewPaste revisions annotations chans langs (paste@Paste{..},hints) = do
+  pasteDetails revisions annotations chans langs paste
+  pasteContent revisions langs paste
   viewHints hints
 
 -- | List the details of the page in a dark section.
-pasteDetails :: [Paste] -> [Channel] -> [Language] -> Paste -> Html
-pasteDetails pastes chans langs paste@Paste{..} =
+pasteDetails :: [Paste] -> [Paste] -> [Channel] -> [Language] -> Paste -> Html
+pasteDetails revisions annotations chans langs paste@Paste{..} =
   darkNoTitleSection $ do
-    pasteNav langs pastes paste
+    pasteNav langs annotations paste
     h2 $ toHtml $ fromStrict pasteTitle
     ul ! aClass "paste-specs" $ do
       detail "Paste" $ pasteLink paste $ "#" ++ show pasteId
-      detail "Author" $ pasteAuthor
+      detail "Author(s)" $ pasteAuthor
       detail "Language" $ showLanguage langs pasteLanguage
       detail "Channel" $ do showChannel chans pasteChannel
---                            " "
---                            showContextLink paste chans pasteChannel
       detail "Created" $ showDateTime pasteDate
       detail "Raw" $ pasteRawLink paste $ ("View raw link" :: Text)
+      unless (length revisions < 2) $ detail "Revisions" $ do
+        br
+        ul !. "revisions" $ forM_ revisions $ revisionDetails paste 
     clear
 
     where detail title content = do
             li $ do strong (title ++ ":"); toHtml content
+
+revisionDetails :: Paste -> Paste -> Html
+revisionDetails paste revision = li $ do
+  toHtml $ showDateTime (pasteDate revision)
+  " "
+  revisionLink revision $ do "#"; toHtml (show (pasteId revision))
+  unless (pasteId paste == pasteId revision) $ do
+    " "
+    href ("/diff/" ++ show (pasteId paste) ++ "/" ++ show (pasteId revision)) $
+      ("(diff)" :: Html)
+  ": "
+  toHtml (pasteTitle revision)
 
 showContextLink :: Paste -> [Channel] -> Maybe ChannelId -> Html
 showContextLink Paste{..} chans chid =
@@ -193,13 +208,19 @@ pasteNav langs pastes paste =
           ls = map (languageId &&& languageName) langs
 
 -- | Show the paste content with highlighting.
-pasteContent :: [Language] -> Paste -> Html
-pasteContent langs paste =
-  lightNoTitleSection $ highlightPaste langs paste
+pasteContent :: [Paste] -> [Language] -> Paste -> Html
+pasteContent revisions langs paste =
+  case revisions of
+    (rev:_) -> lightNoTitleSection $ highlightPaste langs rev
+    _ -> lightNoTitleSection $ highlightPaste langs paste
 
 -- | The href link to a paste.
 pasteLink :: ToHtml html => Paste -> html -> Html
 pasteLink Paste{..} inner = href ("/" ++ show pasteId) inner
+
+-- | The href link to a paste.
+revisionLink :: ToHtml html => Paste -> html -> Html
+revisionLink Paste{..} inner = href ("/revision/" ++ show pasteId) inner
 
 -- | The href link to a paste, raw content.
 pasteRawLink :: ToHtml html => Paste -> html -> Html

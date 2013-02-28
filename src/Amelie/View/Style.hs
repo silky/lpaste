@@ -176,6 +176,9 @@ paste = do
       width "8em"
       display "block"
       float "left"
+  rule ".revisions" $ do
+    listStyleType "none"
+    paddingLeft "0"
   classRule "paste-nav" $ do
     float "right"
 

@@ -97,6 +97,7 @@ data PasteFormlet = PasteFormlet {
  , pfDefChan   :: Maybe Text
  , pfAnnotatePaste :: Maybe Paste
  , pfEditPaste :: Maybe Paste
+ , pfContent :: Maybe Text
 }
 
 data ExprFormlet = ExprFormlet {
@@ -110,7 +111,10 @@ data PastePage = PastePage {
   , ppLangs           :: [Language]
   , ppHints           :: [Hint]
   , ppAnnotations     :: [Paste]
+  , ppRevisions       :: [Paste]
   , ppAnnotationHints :: [[Hint]]
+  , ppRevisionsHints  :: [[Hint]]
+  , ppRevision        :: Bool
 }
 
 data StepsPage = StepsPage {
