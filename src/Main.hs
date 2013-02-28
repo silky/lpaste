@@ -61,8 +61,6 @@ serve conf p cache ans = route routes where
            ,("/new",run New.handle)
            ,("/edit/:id",run New.handle)
            ,("/new/:channel",run New.handle)
-           ,("/browse/page/:page/offset/:offset",run Browse.handle)
-           ,("/browse/page/:page",run Browse.handle)
            ,("/browse",run Browse.handle)
            ,("/activity",run Activity.handle)
            ,("/diff/:this/:that",run Diff.handle)

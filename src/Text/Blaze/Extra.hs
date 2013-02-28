@@ -1,3 +1,4 @@
+{-# OPTIONS -fno-warn-orphans #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS -fno-warn-name-shadowing -fno-warn-unused-do-bind #-}
@@ -10,12 +11,16 @@ import Data.Monoid.Operator
 import Prelude                     hiding ((++),head,div)
 import Text.Blaze.Html5            as H hiding (map)
 import Text.Blaze.Html5.Attributes as A
+import Text.Blaze.Internal         (Attributable)
+import Network.URI.Params
 import Network.URI
 import Text.Printf
 import Data.List (intercalate)
 
+(!.) :: (Attributable h) => h -> AttributeValue -> h
 elem !. className = elem ! class_ className
 
+(!#) :: (Attributable h) => h -> AttributeValue -> h
 elem !# idName = elem ! A.id idName
 
 linesToHtml :: String -> Html
@@ -32,4 +37,20 @@ htmlCommasAnd [x,y] = do x; " and "; y
 htmlCommasAnd (x:xs) = do x; ", "; htmlCommasAnd xs
 htmlCommasAnd []  = mempty
 
+htmlCommas :: [Html] -> Html
 htmlCommas = htmlIntercalate ", "
+
+hrefSet :: URI -> String -> String -> Attribute
+hrefSet uri key value = hrefURI updated where
+  updated = updateUrlParam key value uri
+
+hrefURI :: URI -> Attribute
+hrefURI uri = href (toValue (showURI uri)) where
+  showURI URI{..} = uriPath ++ uriQuery
+
+hrefAssoc :: String -> [(String,String)] -> Attribute
+hrefAssoc path qs = href (toValue uri) where
+  uri = "/" ++ path ++ "?" ++ intercalate "&" (map (uncurry (printf "%s=%s")) qs)
+
+instance ToValue URI where
+  toValue = toValue . show

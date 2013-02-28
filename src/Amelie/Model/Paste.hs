@@ -41,10 +41,12 @@ import System.Directory
 import System.FilePath
 
 -- | Count public pastes.
-countPublicPastes :: Model Integer
-countPublicPastes = do
-  rows <- singleNoParams ["SELECT COUNT(*)"
-                         ,"FROM public_toplevel_paste"]
+countPublicPastes :: Maybe String -> Model Integer
+countPublicPastes mauthor = do
+  rows <- single ["SELECT COUNT(*)"
+                 ,"FROM public_toplevel_paste"
+		 ,"WHERE (? IS NULL) OR (author = ?)"]
+		 (mauthor,mauthor)
   return $ fromMaybe 0 rows
 
 -- | Get the latest pastes.
@@ -56,13 +58,15 @@ getLatestPastes =
                 ,"LIMIT 20"]
 
 -- | Get some paginated pastes.
-getSomePastes :: Pagination -> Model [Paste]
-getSomePastes Pagination{..} =
-  queryNoParams ["SELECT *"
-                ,"FROM public_toplevel_paste"
-                ,"ORDER BY id DESC"
-                ,"OFFSET " ++ show (max 0 (pnPage - 1) * pnLimit)
-                ,"LIMIT " ++ show pnLimit]
+getSomePastes :: Maybe String -> Pagination -> Model [Paste]
+getSomePastes mauthor Pagination{..} =
+  query ["SELECT *"
+	,"FROM public_toplevel_paste"
+	,"WHERE (? IS NULL) OR (author = ?)"
+	,"ORDER BY id DESC"
+	,"OFFSET " ++ show (max 0 (pnPage - 1) * pnLimit)
+	,"LIMIT " ++ show pnLimit]
+        (mauthor,mauthor)
 
 -- | Get a paste by its id.
 getPasteById :: PasteId -> Model (Maybe Paste)

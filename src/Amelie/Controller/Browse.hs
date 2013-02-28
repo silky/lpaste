@@ -7,7 +7,7 @@ module Amelie.Controller.Browse
   (handle)
   where
 
-import Amelie.Controller     (output,getPagination)
+import Amelie.Controller     (output,getPagination,getStringMaybe)
 import Amelie.Model
 import Amelie.Model.Channel  (getChannels)
 import Amelie.Model.Language (getLanguages)
@@ -18,10 +18,10 @@ import Amelie.View.Browse    (page)
 handle :: Controller ()
 handle = do
   pn <- getPagination
-  total <- model countPublicPastes
-  pastes <- model $ getSomePastes pn
-  let pn' = pn { pnRoot = "/browse"
-               , pnResults = fromIntegral (length pastes)
+  author <- getStringMaybe "author"
+  total <- model $ countPublicPastes author
+  pastes <- model $ getSomePastes author pn
+  let pn' = pn { pnResults = fromIntegral (length pastes)
                , pnTotal = total }
   chans <- model getChannels
   langs <- model getLanguages

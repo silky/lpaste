@@ -29,9 +29,11 @@ import           Data.Monoid.Operator        ((++))
 import           Data.Text                   (pack)
 import           Data.Text.Lazy              (Text)
 import qualified Data.Text.Lazy              as T
+import           Network.URI.Params
 import           Prelude                     hiding ((++))
 import           Text.Blaze.Html5            as H hiding (map,nav)
 import qualified Text.Blaze.Html5.Attributes as A
+import           Text.Blaze.Extra
 
 -- | A class prefixed with amelie-.
 aClass :: AttributeValue -> Attribute
@@ -130,7 +132,9 @@ nav pn@Pagination{..} showTotal = do
 -- | Link to change navigation page based on a direction.
 navDirection :: Pagination -> Integer -> Text -> Html
 navDirection Pagination{..} change caption = do
-  href url caption
+  a ! hrefURI uri $ toHtml caption
 
-    where url = pnRoot ++ "/page/" ++ 
-                pack (show $ pnPage + change)
+  where uri = updateUrlParam "page"
+  	      		     (show (pnPage + change))
+			     pnURI
+

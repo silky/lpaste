@@ -49,3 +49,4 @@ Executable amelie
    ,transformers
    ,utf8-string
    ,mime-mail
+   ,cgi

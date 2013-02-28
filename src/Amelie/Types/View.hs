@@ -2,13 +2,15 @@ module Amelie.Types.View
   (Pagination(..))
   where
 
-import Data.Text (Text)
+import Data.Map (Map)
+import Data.ByteString (ByteString)
+import Network.URI (URI)
 
 -- | Pagination data.
 data Pagination = Pagination {
    pnPage :: Integer
  , pnLimit :: Integer
- , pnRoot :: Text
+ , pnURI :: URI
  , pnResults :: Integer
  , pnTotal :: Integer
 } deriving Show

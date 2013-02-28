@@ -12,6 +12,7 @@ module Amelie.Controller
   ,justOrGoHome
   ,getInteger
   ,getString
+  ,getStringMaybe
   ,getPagination)
   where
 
@@ -20,15 +21,17 @@ import Amelie.Types.Cache
 
 import Control.Applicative
 import Control.Concurrent.Chan    (Chan)
+import Control.Monad.Env
 import Control.Monad.Reader       (runReaderT)
 import Data.ByteString            (ByteString)
 import Data.ByteString.UTF8       (toString)
+import Data.Maybe
+import Network.URI
 import Data.Text.Lazy             (Text,toStrict)
 import Database.PostgreSQL.Base   (withPoolConnection)
 import Database.PostgreSQL.Simple (Pool)
 import Safe                       (readMay)
-import Snap.Core                  (Snap,writeText,redirect,getParam)
-import Snap.Core                  (modifyResponse,setContentType)
+import Snap.Core  
 import Text.Blaze                 (Html)
 import Text.Blaze.Renderer.Text   (renderHtml)
 
@@ -75,14 +78,31 @@ getString name def = do
   pid <- (>>= return . toString) <$> getParam name
   maybe (return def) return pid
 
+-- | Get string (maybe).
+getStringMaybe :: ByteString -> Controller (Maybe String)
+getStringMaybe name = do
+  pid <- (>>= return . toString) <$> getParam name
+  return pid
+
 -- | Get pagination data.
 getPagination :: Controller Pagination
 getPagination = do
   p <- getInteger "page" 1
   limit <- getInteger "limit" 35
+  i <- fmap rqURI getRequest
+  uri <- getMyURI
   return Pagination { pnPage = max 1 p
                     , pnLimit = max 1 (min 100 limit)
-                    , pnRoot = "/"
+                    , pnURI = uri
                     , pnResults = 0
                     , pnTotal = 0
                     }
+
+getMyURI = do
+ domain <- env (configDomain . controllerStateConfig)
+ fmap (fromJust .
+       parseURI .
+       (("http://" ++ domain) ++) .
+       toString .
+       rqURI)
+      getRequest

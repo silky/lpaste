@@ -18,7 +18,6 @@ handle = do
   pn <- getPagination
   total <- model countReports
   reports <- model $ getSomeReports pn
-  let pn' = pn { pnRoot = "/reported"
-               , pnResults = fromIntegral (length reports)
+  let pn' = pn { pnResults = fromIntegral (length reports)
                , pnTotal = total }
   output $ page pn' reports
