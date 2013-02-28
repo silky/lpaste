@@ -24,9 +24,9 @@ getConfig conf = do
         [pghost,pgport,pguser,pgpass,pgdb]
           <- mapM (get c "POSTGRESQL")
                   ["host","port","user","pass","db"]
-        [domain]
+        [domain,cache]
           <- mapM (get c "WEB")
-                  ["domain"]
+                  ["domain","cache"]
         [commits,url]
           <- mapM (get c "DEV")
                   ["commits","repo_url"]
@@ -50,6 +50,7 @@ getConfig conf = do
          , configIrcDir = ircDir
 	 , configAdmin = Address Nothing (T.pack admin)
 	 , configSiteAddy = Address Nothing (T.pack siteaddy)
+	 , configCacheDir = cache
          }
   case config of
     Left cperr -> error $ show cperr

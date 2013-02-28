@@ -209,10 +209,10 @@ diff :: CSS Rule
 diff = do
   classRule "diff-both" $
     return ()
-  classRule "diff-second" $ do
+  classRule "diff-first" $ do
     backgroundColor "#FDD"
     color "#695B5B"
-  classRule "diff-first" $ do
+  classRule "diff-second" $ do
     backgroundColor "#DFD"
 
 -- | Tokens colours and styles.

@@ -19,6 +19,7 @@ data Config = Config {
   , configIrcDir          :: FilePath
   , configAdmin           :: Address
   , configSiteAddy        :: Address
+  , configCacheDir        :: FilePath
   }
 
 -- | Announcer configuration.

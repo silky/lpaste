@@ -15,7 +15,6 @@ data Key =
     Home
   | Paste Integer
   | Activity
-  | Steps Integer String -- Expr
     deriving (Eq,Ord)
 
 data Cache =
