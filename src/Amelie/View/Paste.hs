@@ -22,7 +22,7 @@ import           Control.Applicative
 import           Control.Arrow               ((&&&))
 import           Control.Monad               
 import           Data.ByteString.UTF8        (toString)
-import           Data.List                   (find)
+import           Data.List                   (find,nub)
 import qualified Data.Map                    as M
 import           Data.Maybe                  (fromMaybe)
 import           Data.Monoid.Operator        ((++))
@@ -30,7 +30,7 @@ import           Data.Text                   (Text,pack)
 import qualified Data.Text                   as T
 import           Data.Text.Lazy              (fromStrict)
 import           Data.Time.Show              (showDateTime)
-import           Data.Traversable
+import           Data.Traversable hiding (forM)
 import           Numeric
 import           Prelude                     hiding ((++))
 import           Safe                        (readMay)
@@ -143,24 +143,35 @@ viewPaste revisions annotations chans langs (paste@Paste{..},hints) = do
 
 -- | List the details of the page in a dark section.
 pasteDetails :: [Paste] -> [Paste] -> [Channel] -> [Language] -> Paste -> Html
-pasteDetails revisions annotations chans langs paste@Paste{..} =
+pasteDetails revisions annotations chans langs paste =
   darkNoTitleSection $ do
     pasteNav langs annotations paste
-    h2 $ toHtml $ fromStrict pasteTitle
+    h2 $ toHtml $ fromStrict (pasteTitle paste)
     ul ! aClass "paste-specs" $ do
-      detail "Paste" $ pasteLink paste $ "#" ++ show pasteId
-      detail "Author(s)" $ pasteAuthor
-      detail "Language" $ showLanguage langs pasteLanguage
-      detail "Channel" $ do showChannel chans pasteChannel
-      detail "Created" $ showDateTime pasteDate
+      detail "Paste" $ pasteLink paste $ "#" ++ show (pasteId paste)
+      detail "Author(s)" $ do
+        let authors | null revisions = map pasteAuthor [paste]
+	    	    | otherwise      = map pasteAuthor revisions
+        htmlCommasAnd $ flip map (nub authors) $ \author ->
+	  href ("/browse?author=" ++ author) $ toHtml author
+      detail "Language" $ showLanguage langs (pasteLanguage paste)
+      detail "Channel" $ do showChannel chans (pasteChannel paste)
+      detail "Created" $ showDateTime (pasteDate paste)
       detail "Raw" $ pasteRawLink paste $ ("View raw link" :: Text)
       unless (length revisions < 2) $ detail "Revisions" $ do
         br
-        ul !. "revisions" $ forM_ revisions $ revisionDetails paste 
+        ul !. "revisions" $ listRevisions paste revisions
     clear
 
     where detail title content = do
             li $ do strong (title ++ ":"); toHtml content
+
+listRevisions :: Paste -> [Paste] -> Html
+listRevisions p [] = return ()
+listRevisions p [x] = revisionDetails p x
+listRevisions p (x:y:xs) = do
+  revisionDetails y x
+  listRevisions p (y:xs)
 
 revisionDetails :: Paste -> Paste -> Html
 revisionDetails paste revision = li $ do
