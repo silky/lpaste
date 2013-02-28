@@ -209,10 +209,10 @@ diff :: CSS Rule
 diff = do
   classRule "diff-both" $
     return ()
-  classRule "diff-first" $ do
+  classRule "diff-second" $ do
     backgroundColor "#FDD"
     color "#695B5B"
-  classRule "diff-second" $ do
+  classRule "diff-first" $ do
     backgroundColor "#DFD"
 
 -- | Tokens colours and styles.
@@ -243,10 +243,10 @@ tokens = do
       jcolor "number" "#4F4371"
       rule ".header" $ do
         color "#555"
-      rule ".addition" $ do
+      rule ".deletion" $ do
         backgroundColor "#FDD"
         color "#695B5B"
-      rule ".deletion" $ do
+      rule ".addition" $ do
         backgroundColor "#DFD"
         color "#000"
   where token name props = rule (".hs-" ++ name) $ props
