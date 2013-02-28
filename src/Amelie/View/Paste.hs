@@ -18,7 +18,7 @@ import           Amelie.View.Hlint           (viewHints)
 import           Amelie.View.Html
 import           Amelie.View.Layout
 
-import           Control.Applicative         ((<$>),(<*>),pure)
+import           Control.Applicative       
 import           Control.Arrow               ((&&&))
 import           Control.Monad               (when,join)
 import           Data.ByteString.UTF8        (toString)
@@ -65,14 +65,17 @@ pasteFormlet pf@PasteFormlet{..} =
     
   where action = case pfAnnotatePaste of
                    Just Paste{..} -> "/annotate/" ++ show (fromMaybe pasteId pasteParent)
-                   Nothing        -> "/new"
+                   Nothing        ->
+                     case pfEditPaste of
+		       Just Paste{..} -> "/edit/" ++ show pasteId
+		       Nothing -> "/new"
 
 -- | The paste submitting formlet itself.
 pasteSubmit :: PasteFormlet -> Formlet PasteSubmit
 pasteSubmit pf@PasteFormlet{..} =
   PasteSubmit
     <$> pure (getPasteId pf)
-    <*> req (textInput "title" "Title" annotateTitle)
+    <*> req (textInput "title" "Title" (annotateTitle <|> editTitle))
     <*> defaulting "Anonymous Coward" (textInput "author" "Author" Nothing)
     <*> parse (traverse lookupLang)
               (opt (dropInput languages "language" "Language" (snd defChan)))
@@ -100,6 +103,11 @@ pasteSubmit pf@PasteFormlet{..} =
           annotateTitle = ((++ " (annotation)") . pasteTitle) <$> pfAnnotatePaste
           annotateLanguage = join (fmap pasteLanguage pfAnnotatePaste) >>= findLangById
           annotateChan = join (fmap pasteChannel pfAnnotatePaste) >>= findChanById
+ 
+          editContent = pastePaste <$> pfEditPaste
+          editTitle = (("Edit: " ++) . pasteTitle) <$> pfEditPaste
+          editLanguage = join (fmap pasteLanguage pfEditPaste) >>= findLangById
+          editChan = join (fmap pasteChannel pfEditPaste) >>= findChanById
 
           findChanById id = channelName <$> find ((==id).channelId) pfChannels
           findLangById id = languageName <$> find ((==id).languageId) pfLanguages
@@ -161,7 +169,8 @@ pasteNav :: [Language] -> [Paste] -> Paste -> Html
 pasteNav langs pastes paste =
   H.div ! aClass "paste-nav" $ do
     diffLink
-    stepsLink
+    href ("/edit/" ++ pack (show pid) ++ "") ("Edit" :: Text)
+    " - "
     href ("/annotate/" ++ pack (show pid) ++ "") ("Annotate" :: Text)
     " - "
     href ("/report/" ++ pack (show pid) ++ "") ("Report/Delete" :: Text)
@@ -176,11 +185,6 @@ pasteNav langs pastes paste =
                 href ("/diff/" ++ show prevId ++ "/" ++ show pid)
                      ("Diff" :: Text)
                 " - "
-          stepsLink
-            -- | lang == Just "haskell" = do href ("/steps/" ++ show pid)
-            --                                    ("Steps" :: Text)
-            --                               " - "
-            | otherwise = return ()
           lang = pasteLanguage paste >>= (`lookup` ls)
           ls = map (languageId &&& languageName) langs
 

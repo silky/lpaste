@@ -4,7 +4,7 @@
 -- | Create new paste controller.
 
 module Amelie.Controller.New
-  (handle)
+  (handle,NewStyle(..))
   where
 
 import Amelie.Controller
@@ -13,26 +13,39 @@ import Amelie.Model
 import Amelie.Model.Channel    (getChannels)
 import Amelie.Model.Language   (getLanguages)
 import Amelie.Model.Paste      (getPasteById)
-import Amelie.View.Annotate        as Annotate (page)
+import Amelie.View.Annotate    as Annotate (page)
+import Amelie.View.Edit        as Edit (page)
 import Amelie.View.New         as New (page)
 
 import Control.Applicative
 import Data.Text.Encoding      (decodeUtf8)
 import Snap.Core
 
+data NewStyle = NewPaste | AnnotatePaste | EditPaste
+ deriving Eq
+
 -- | Make a new paste.
-handle :: Controller ()
-handle = do
+handle :: NewStyle -> Controller ()
+handle style = do
   chans <- model $ getChannels
   langs <- model $ getLanguages
   defChan <- fmap decodeUtf8 <$> getParam "channel"
-  pid <- getPasteId
+  pid <- if style == NewPaste then return Nothing else getPasteId
   case pid of
     Just pid -> do
-      paste <- model $ getPasteById (fromIntegral pid)
-      form <- pasteForm chans langs defChan paste
+      apaste <- if style == AnnotatePaste
+      	     	   then model $ getPasteById (fromIntegral pid)
+		   else return Nothing
+      epaste <- if style == EditPaste
+      	     	   then model $ getPasteById (fromIntegral pid)
+		   else return Nothing
+      let paste = apaste <|> epaste
+      form <- pasteForm chans langs defChan apaste epaste
       justOrGoHome paste $ \paste -> do
-        output $ Annotate.page paste form
+        case style of
+          AnnotatePaste -> output $ Annotate.page paste form
+	  EditPaste     -> output $ Edit.page paste form
+	  _ -> goHome
     Nothing -> do
-      form <- pasteForm chans langs defChan Nothing
+      form <- pasteForm chans langs defChan Nothing Nothing
       output $ New.page form

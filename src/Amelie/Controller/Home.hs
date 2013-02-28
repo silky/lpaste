@@ -24,7 +24,7 @@ handle = do
     pastes <- model $ getLatestPastes
     chans <- model $ getChannels
     langs <- model $ getLanguages
-    form <- pasteForm chans langs Nothing Nothing
+    form <- pasteForm chans langs Nothing Nothing Nothing
     uri <- getMyURI
     return $ Just $ page uri chans langs pastes form
   maybe (return ()) outputText html

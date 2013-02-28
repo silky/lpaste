@@ -83,6 +83,7 @@ data PasteFormlet = PasteFormlet {
  , pfChannels  :: [Channel]
  , pfDefChan   :: Maybe Text
  , pfAnnotatePaste :: Maybe Paste
+ , pfEditPaste :: Maybe Paste
 }
 
 data ExprFormlet = ExprFormlet {
