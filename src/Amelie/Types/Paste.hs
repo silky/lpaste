@@ -52,7 +52,7 @@ data PasteType
   = NormalPaste
   | AnnotationOf PasteId
   | RevisionOf PasteId
-  deriving Show
+  deriving (Eq,Show)
 
 -- | A paste submission or annotate.
 data PasteSubmit = PasteSubmit {

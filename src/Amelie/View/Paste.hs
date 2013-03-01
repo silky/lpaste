@@ -24,7 +24,7 @@ import           Control.Monad
 import           Data.ByteString.UTF8        (toString)
 import           Data.List                   (find,nub)
 import qualified Data.Map                    as M
-import           Data.Maybe                  (fromMaybe)
+import           Data.Maybe
 import           Data.Monoid.Operator        ((++))
 import           Data.Text                   (Text,pack)
 import qualified Data.Text                   as T
@@ -224,13 +224,21 @@ pasteNav langs pastes paste =
     where pid = pasteId paste
           pairs = zip (drop 1 pastes) pastes
           parent = fmap snd $ find ((==pid).pasteId.fst) $ pairs
-          diffLink =
+          diffLink = do
+            case listToMaybe pastes of
+              Nothing -> return ()
+              Just Paste{pasteId=parentId} -> do
+                href ("/diff/" ++ show parentId ++ "/" ++ show pid)
+                     ("Diff original" :: Text)
             case parent of
               Nothing -> return ()
               Just Paste{pasteId=prevId} -> do
-                href ("/diff/" ++ show prevId ++ "/" ++ show pid)
-                     ("Diff" :: Text)
-                " - "
+	        when (pasteType paste /= AnnotationOf prevId) $ do
+                  " / "
+                  href ("/diff/" ++ show prevId ++ "/" ++ show pid)
+                       ("prev" :: Text)
+            case listToMaybe pastes of
+              Nothing -> return (); Just{} -> " - "
           lang = pasteLanguage paste >>= (`lookup` ls)
           ls = map (languageId &&& languageName) langs
 
