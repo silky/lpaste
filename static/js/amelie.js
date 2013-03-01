@@ -1,7 +1,3 @@
-window.jQuery(function (){var var_1 = 0;window.jQuery('.amelie-code').each(function (){var_1 = Math.max(500,Math.max(window.jQuery(this).width() + 50,var_1));return true;});window.jQuery('.amelie-code').each(function (){window.jQuery('.amelie-wrap.').width(Math.max(var_1,500));return true;});window.jQuery('.amelie-latest-pastes').each(function (){window.jQuery('.amelie-wrap.').width(Math.max(window.jQuery(this).width(),500));return true;});window.jQuery('.amelie-hint').each(function (){var var_6 = window.jQuery(this);var_6.css('height','1em');var_6.css('overflow','hidden');var_6.parent().css('cursor','pointer');var_6.parent().toggle(function (){var_6.css('height','auto');return false;},function (){var_6.css('height','1em');var_6.css('overflow','hidden');return false;});return true;});window.jQuery('.amelie-paste-nav').each(function (){var var_10 = window.jQuery('<a href="">Expand</a>');var var_11 = window.jQuery(this);var_11.prepend(' - ');var_11.prepend(var_10);var var_12 = var_11.siblings('.amelie-paste-specs');var_12.css('display','none');var_10.text('Expand');var_10.toggle(function (){var_12.css('display','block');var_10.text('Collapse');return false;},function (){var_12.css('display','none');var_10.text('Expand');return false;});return true;});});
-
-
-/*jshint eqnull:true */
 /*!
  * jQuery Cookie Plugin v1.1
  * https://github.com/carhartl/jquery-cookie
