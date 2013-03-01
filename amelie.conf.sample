@@ -1,22 +1,27 @@
 [POSTGRESQL]
 host = 127.0.0.1
 port = 5432
-user = <YOURUSER>
-pass = <YOURPASS>
-db = <YOURDB>
+user = hpaste
+pass = hpaste
+db = hpaste
 
 [ANNOUNCE]
-user = hpaste
-pass = <YOURPASS>
+user = yourdomain
+pass = yourpass
 host = 127.0.0.1
 port = 6667
 
 [WEB]
-domain = hpaste:10000
+domain = yourdomain.org
+cache = /tmp/hpaste-cache
 
 [DEV]
-commits = https://github.com/chrisdone/amelie/commits/master.atom
-repo_url = https://github.com/chrisdone/amelie
+commits = https://github.com/chrisdone/hpaste/commits/master.atom
+repo_url = https://github.com/chrisdone/hpaste
 
-[STEPEVAL]
-prelude = wwwroot/hs/stepeval-prelude.hs
+[IRC]
+log_dir = irc_logs
+
+[ADDRESSES]
+admin = email@yourdomain.com
+site_addy = noreply@yourdomain.org
