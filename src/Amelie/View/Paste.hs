@@ -103,7 +103,8 @@ pasteSubmit pf@PasteFormlet{..} =
           lookupLang slug = findOption ((==slug).languageName) pfLanguages languageId
           lookupChan slug = findOption ((==slug).channelName) pfChannels channelId
           
-          defChan = maybe (fromMaybe "" annotateChan,fromMaybe "haskell" annotateLanguage)
+          defChan = maybe (fromMaybe "" (annotateChan <|> editChan)
+	  	    	  ,fromMaybe "haskell" (annotateLanguage <|> editLanguage))
                           (channelName &&& trim.channelName)
                           (pfDefChan >>= findChan)
           findChan name = find ((==name).trim.channelName) pfChannels
@@ -115,7 +116,7 @@ pasteSubmit pf@PasteFormlet{..} =
           annotateChan = join (fmap pasteChannel pfAnnotatePaste) >>= findChanById
  
           editContent = pastePaste <$> pfEditPaste
-          editTitle = (("Edit: " ++) . pasteTitle) <$> pfEditPaste
+          editTitle = Nothing
           editLanguage = join (fmap pasteLanguage pfEditPaste) >>= findLangById
           editChan = join (fmap pasteChannel pfEditPaste) >>= findChanById
 

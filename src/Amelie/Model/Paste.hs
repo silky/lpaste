@@ -117,8 +117,7 @@ createPaste langs chans ps@PasteSubmit{..} = do
   when (lang == Just "haskell") $ just res $ createHints ps
   just (pasteSubmitChannel >>= lookupChan) $ \chan ->
     just res $ \pid -> do
-      annotated <- maybe (return Nothing) getPasteById pasteSubmitId
-      announcePaste annotated (channelName chan) ps pid
+      announcePaste pasteSubmitType (channelName chan) ps pid
   return (pasteSubmitId <|> res)
 
   where lookupChan cid = find ((==cid).channelId) chans
@@ -142,20 +141,31 @@ createHints ps pid = do
          ,show hint)
 
 -- | Announce the paste.
-announcePaste :: Maybe Paste -> Text -> PasteSubmit -> PasteId -> Model ()
-announcePaste annotated channel PasteSubmit{..} pid = do
-  conf <- env modelStateConfig  
-  announce (fromStrict channel) $ fromStrict $
+announcePaste :: PasteType -> Text -> PasteSubmit -> PasteId -> Model ()
+announcePaste ptype channel PasteSubmit{..} pid = do
+  conf <- env modelStateConfig
+  verb <- getVerb
+  announce (fromStrict channel) $ fromStrict $ do
     nick ++ " " ++ verb ++ " “" ++ pasteSubmitTitle ++ "” at " ++ link conf
   where nick | validNick (unpack pasteSubmitAuthor) = pasteSubmitAuthor
              | otherwise = "“" ++ pasteSubmitAuthor ++ "”"
         link Config{..} = "http://" ++ pack configDomain ++ "/" ++ pid'
-        pid' = case annotated of
-                 Just Paste{..} -> showPid pasteId ++ "#a" ++ showPid pid
-                 Nothing -> showPid pid
-        verb = case annotated of
-                 Just Paste{..} -> "annotated “" ++ pasteTitle ++ "” with"
-                 Nothing -> "pasted"
+        pid' = case ptype of
+	         NormalPaste -> showPid pid
+                 AnnotationOf apid -> showPid apid ++ "#a" ++ showPid pid
+                 RevisionOf apid -> showPid apid
+        getVerb = case ptype of
+          NormalPaste -> return $ "pasted"
+          AnnotationOf pid -> do
+            paste <- getPasteById pid
+	    return $ case paste of
+	      Just Paste{..} -> "annotated “" ++ pasteTitle ++ "” with"
+              Nothing -> "annotated a paste with"
+          RevisionOf pid -> do
+            paste <- getPasteById pid
+	    return $ case paste of
+	      Just Paste{..} -> "revised “" ++ pasteTitle ++ "”:"
+              Nothing -> "revised a paste:"
         showPid p = pack $ show $ (fromIntegral p :: Integer)
 
 -- | Is a nickname valid? Digit/letter or one of these: -_/\\;()[]{}?`'
