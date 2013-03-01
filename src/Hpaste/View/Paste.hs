@@ -11,16 +11,16 @@ module Hpaste.View.Paste
   ,pasteRawLink)
   where
 
-import           Hpaste.Model.Irclogs        (showIrcDateTime)
+
 import           Hpaste.Types
 import           Hpaste.View.Highlight       (highlightPaste)
 import           Hpaste.View.Hlint           (viewHints)
 import           Hpaste.View.Html
 import           Hpaste.View.Layout
 
-import           Control.Applicative       
+import           Control.Applicative
 import           Control.Arrow               ((&&&))
-import           Control.Monad               
+import           Control.Monad
 import           Data.ByteString.UTF8        (toString)
 import           Data.List                   (find,nub)
 import qualified Data.Map                    as M
@@ -31,7 +31,7 @@ import qualified Data.Text                   as T
 import           Data.Text.Lazy              (fromStrict)
 import           Data.Time.Show              (showDateTime)
 import           Data.Traversable hiding (forM)
-import           Numeric
+
 import           Prelude                     hiding ((++))
 import           Safe                        (readMay)
 import           Text.Blaze.Html5            as H hiding (map)
@@ -56,7 +56,7 @@ page PastePage{ppPaste=p@Paste{..},..} =
                                   (zip ppAnnotations ppAnnotationHints)
   , pageName = "paste"
   }
-  
+
 -- | A formlet for paste submission / annotateing.
 pasteFormlet :: PasteFormlet -> (Formlet PasteSubmit,Html)
 pasteFormlet pf@PasteFormlet{..} =
@@ -68,7 +68,7 @@ pasteFormlet pf@PasteFormlet{..} =
         formletHtml (pasteSubmit pf) pfParams
         submitInput "submit" "Submit"
   in (pasteSubmit pf,form)
-    
+
   where action = case pfAnnotatePaste of
                    Just Paste{..} -> "/annotate/" ++ show (fromMaybe pasteId pasteParent)
                        where pasteParent = case pasteType of
@@ -103,23 +103,21 @@ pasteSubmit pf@PasteFormlet{..} =
 	    swap x  = x
     	  channels = options channelName channelName pfChannels
           languages = options languageName languageTitle pfLanguages
-          
+
           lookupLang slug = findOption ((==slug).languageName) pfLanguages languageId
           lookupChan slug = findOption ((==slug).channelName) pfChannels channelId
-          
+
           defChan = maybe (fromMaybe "" (annotateChan <|> editChan)
 	  	    	  ,fromMaybe "haskell" (annotateLanguage <|> editLanguage))
                           (channelName &&& trim.channelName)
                           (pfDefChan >>= findChan)
           findChan name = find ((==name).trim.channelName) pfChannels
           trim = T.dropWhile (=='#')
-          
-          annotateContent = pastePaste <$> pfAnnotatePaste
+
           annotateTitle = ((++ " (annotation)") . pasteTitle) <$> pfAnnotatePaste
           annotateLanguage = join (fmap pasteLanguage pfAnnotatePaste) >>= findLangById
           annotateChan = join (fmap pasteChannel pfAnnotatePaste) >>= findChanById
- 
-          editContent = pastePaste <$> pfEditPaste
+
           editTitle = Nothing
           editLanguage = join (fmap pasteLanguage pfEditPaste) >>= findLangById
           editChan = join (fmap pasteChannel pfEditPaste) >>= findChanById
@@ -150,7 +148,7 @@ viewPaste revisions annotations chans langs (paste@Paste{..},hints) = do
 pasteDetails :: [Paste] -> [Paste] -> [Channel] -> [Language] -> Paste -> Html
 pasteDetails revisions annotations chans langs paste =
   darkNoTitleSection $ do
-    pasteNav langs annotations paste
+    pasteNav annotations paste
     h2 $ toHtml $ fromStrict (pasteTitle paste)
     ul ! aClass "paste-specs" $ do
       detail "Paste" $ do
@@ -188,7 +186,7 @@ linkToParent paste = do
 
 -- | List the revisions of a paste.
 listRevisions :: Paste -> [Paste] -> Html
-listRevisions p [] = return ()
+listRevisions _ [] = return ()
 listRevisions p [x] = revisionDetails p x
 listRevisions p (x:y:xs) = do
   revisionDetails y x
@@ -211,8 +209,8 @@ revisionDetails paste revision = li $ do
   ")"
 
 -- | Individual paste navigation.
-pasteNav :: [Language] -> [Paste] -> Paste -> Html
-pasteNav langs pastes paste =
+pasteNav :: [Paste] -> Paste -> Html
+pasteNav pastes paste =
   H.div ! aClass "paste-nav" $ do
     diffLink
     href ("/edit/" ++ pack (show pid) ++ "") ("Edit" :: Text)
@@ -220,7 +218,7 @@ pasteNav langs pastes paste =
     href ("/annotate/" ++ pack (show pid) ++ "") ("Annotate" :: Text)
     " - "
     href ("/report/" ++ pack (show pid) ++ "") ("Report/Delete" :: Text)
-    
+
     where pid = pasteId paste
           pairs = zip (drop 1 pastes) pastes
           parent = fmap snd $ find ((==pid).pasteId.fst) $ pairs
@@ -239,8 +237,6 @@ pasteNav langs pastes paste =
                        ("prev" :: Text)
             case listToMaybe pastes of
               Nothing -> return (); Just{} -> " - "
-          lang = pasteLanguage paste >>= (`lookup` ls)
-          ls = map (languageId &&& languageName) langs
 
 -- | Show the paste content with highlighting.
 pasteContent :: [Paste] -> [Language] -> Paste -> Html

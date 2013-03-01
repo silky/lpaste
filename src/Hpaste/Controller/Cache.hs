@@ -7,10 +7,10 @@ module Hpaste.Controller.Cache
        ,cache
        ,cacheIf
        ,resetCache
-       ,resetCacheModel) 
+       ,resetCacheModel)
        where
- 
-import           Hpaste.Types (Controller,ControllerState(..))
+
+
 import           Hpaste.Types.Cache
 import           Hpaste.Types.Config
 import           Hpaste.Types.MVC
@@ -43,7 +43,6 @@ cacheIf pred key generate =
 -- | cache.
 cache :: Key -> Controller (Maybe Html) -> Controller (Maybe Text)
 cache key generate = do
-  Cache var <- asks controllerStateCache
   tmpdir <- asks (configCacheDir . controllerStateConfig)
   let cachePath = tmpdir ++ "/" ++ keyToString key
   exists <- io $ doesFileExist cachePath
@@ -63,7 +62,7 @@ resetCache key = do
   io $ do
    let cachePath = tmpdir ++ "/" ++ keyToString key
    exists <- io $ doesFileExist cachePath
-   when exists $ removeFile cachePath  
+   when exists $ removeFile cachePath
 
 -- | Reset an item in the cache.
 resetCacheModel :: Key -> Model ()
@@ -72,7 +71,7 @@ resetCacheModel key = do
   io $ do
    let cachePath = tmpdir ++ "/" ++ keyToString key
    exists <- io $ doesFileExist cachePath
-   when exists $ removeFile cachePath  
+   when exists $ removeFile cachePath
 
 keyToString :: Key -> String
 keyToString Home = "home.html"

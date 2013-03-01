@@ -12,7 +12,7 @@ import Hpaste.Types
 import Hpaste.View.Html
 import Hpaste.View.Layout
 import Hpaste.View.Paste  (pasteLink)
-import Hpaste.Model.Paste (validNick)
+
 
 import Data.Text          (Text)
 import Data.Time.Show     (showDateTime)
@@ -64,7 +64,7 @@ latest uri channels languages ps = do
           authorUri author = updateUrlParam "author" author
 	  	    	   $ updateUrlParam "page"   "0"
 			   $ uri { uriPath = "/browse" }
-					    
+
 -- | Browse link.
 browse :: Html
 browse = href ("/browse" :: Text) ("Browse all pastes" :: Text)

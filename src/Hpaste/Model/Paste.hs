@@ -178,7 +178,7 @@ validNick s = first && all ok s && length s > 0 where
 generateHintsForPaste :: PasteSubmit -> PasteId -> Model [Suggestion]
 generateHintsForPaste PasteSubmit{..} (fromIntegral -> pid :: Integer) = io $
   E.catch (generateHints (show pid) pasteSubmitPaste)
-          (\(SomeException e) -> return [])
+          (\SomeException{} -> return [])
 
 -- | Get hints for a Haskell paste from hlint.
 generateHints :: FilePath -> Text -> IO [Suggestion]
@@ -213,6 +213,6 @@ updatePaste pid PasteSubmit{..} = do
             ,pasteSubmitChannel
             ,pid)
   return ()
-  
+
     where fields = "title author content language channel"
           set key = unwords [key,"=","?"]

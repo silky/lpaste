@@ -12,7 +12,7 @@ import Hpaste.Types
 import Hpaste.View.Html
 import Hpaste.View.Layout
 import Hpaste.View.Paste  (pasteLink)
-import Hpaste.Model.Paste (validNick)
+
 
 import Control.Monad
 import Data.Maybe

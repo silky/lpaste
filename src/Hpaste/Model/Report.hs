@@ -7,7 +7,7 @@
 -- | Report model.
 
 module Hpaste.Model.Report
-  (getSomeReports,createReport,countReports)
+ (getSomeReports,createReport,countReports)
   where
 
 import Hpaste.Types
@@ -16,7 +16,7 @@ import Hpaste.Controller.Cache
 import Hpaste.Types.Cache as Key
 
 import Control.Monad
-import Control.Monad.Trans
+
 import Control.Monad.Env
 import Control.Monad.IO
 import Data.Maybe
@@ -62,6 +62,7 @@ createReport rs@ReportSubmit{..} = do
   sendReport rs
   return res
 
+sendReport :: ReportSubmit -> Model ()
 sendReport ReportSubmit{..} = do
   conf <- env modelStateConfig
   _ <- io $ simpleMail (configAdmin conf)
@@ -72,6 +73,6 @@ sendReport ReportSubmit{..} = do
 		       []
   return ()
 
-  where body = 
+  where body =
   	  "Paste " ++ show rsPaste ++ "\n\n" ++
 	  rsComments

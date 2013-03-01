@@ -43,7 +43,7 @@ data Paste = Paste {
   ,pasteLanguage :: Maybe LanguageId
   ,pasteChannel  :: Maybe ChannelId
   ,pastePaste    :: Text
-  ,pasteViews    :: Integer 
+  ,pasteViews    :: Integer
   ,pasteType     :: PasteType
 } deriving Show
 
@@ -80,9 +80,9 @@ instance QueryResults Paste where
     , pasteId = pid
     , pasteViews = views
     , pasteType = case annotation_of of
-      Just pid -> AnnotationOf pid
+      Just pid' -> AnnotationOf pid'
       _ -> case revision_of of
-        Just pid -> RevisionOf pid
+        Just pid' -> RevisionOf pid'
 	_ -> NormalPaste
     }
     where (pid,title,content,author,date,views,language,channel,annotation_of,revision_of) =

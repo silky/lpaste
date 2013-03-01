@@ -2,8 +2,8 @@ module Hpaste.Types.View
   (Pagination(..))
   where
 
-import Data.Map (Map)
-import Data.ByteString (ByteString)
+
+
 import Network.URI (URI)
 
 -- | Pagination data.

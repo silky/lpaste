@@ -32,7 +32,7 @@ import Data.Text.Lazy             (Text,toStrict)
 import Database.PostgreSQL.Base   (withPoolConnection)
 import Database.PostgreSQL.Simple (Pool)
 import Safe                       (readMay)
-import Snap.Core  
+import Snap.Core
 import Text.Blaze                 (Html)
 import Text.Blaze.Renderer.Text   (renderHtml)
 
@@ -43,7 +43,7 @@ runHandler conf pool cache anns ctrl = do
     let state = ControllerState conf conn cache anns
     -- Default to HTML, can be overridden.
     modifyResponse $ setContentType "text/html"
-    runReaderT (runController ctrl) state 
+    runReaderT (runController ctrl) state
 
 -- | Strictly renders HTML to Text before outputting it via Snap.
 --   This ensures that any lazy exceptions are caught by the Snap
@@ -90,7 +90,6 @@ getPagination :: Controller Pagination
 getPagination = do
   p <- getInteger "page" 1
   limit <- getInteger "limit" 35
-  i <- fmap rqURI getRequest
   uri <- getMyURI
   return Pagination { pnPage = max 1 p
                     , pnLimit = max 1 (min 100 limit)

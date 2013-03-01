@@ -26,7 +26,7 @@ import           Control.Arrow               ((&&&))
 import           Control.Monad               (when)
 import           Data.Maybe                  (fromMaybe)
 import           Data.Monoid.Operator        ((++))
-import           Data.Text                   (pack)
+
 import           Data.Text.Lazy              (Text)
 import qualified Data.Text.Lazy              as T
 import           Network.URI.Params
@@ -110,7 +110,7 @@ paginate pn inner = do
   nav pn True
   inner
   nav pn False
-  
+
 -- | Show a pagination navigation, with results count, if requested.
 nav :: Pagination -> Bool -> Html
 nav pn@Pagination{..} showTotal = do
@@ -137,4 +137,3 @@ navDirection Pagination{..} change caption = do
   where uri = updateUrlParam "page"
   	      		     (show (pnPage + change))
 			     pnURI
-

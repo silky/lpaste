@@ -1,4 +1,4 @@
-{-# OPTIONS -Wall #-}
+{-# OPTIONS -Wall -fno-warn-unused-do-bind #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -44,7 +44,7 @@ layoutPage Page{..} = do
                      \'http://www') + '.google-analytics.com/ga.js'; var\
                      \ s = document.getElementsByTagName('script')[0]; \
                      \s.parentNode.insertBefore(ga, s);})(); </script>"
-    
+
     where js s = script ! A.type_ "text/javascript"
                         ! A.src ("/js/" ++ s) $
                         return ()

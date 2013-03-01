@@ -15,7 +15,7 @@ module Hpaste.Controller.Paste
 import Hpaste.Types
 
 import Hpaste.Controller
-import Hpaste.Controller.Cache (cache,cacheIf,resetCache)
+import Hpaste.Controller.Cache (cache,resetCache)
 import Hpaste.Model
 import Hpaste.Model.Channel    (getChannels)
 import Hpaste.Model.Language   (getLanguages)
@@ -112,7 +112,7 @@ getPasteId = (fmap toString >=> readMay) <$> getParam "id"
 getPasteIdKey :: ByteString -> Controller (Maybe Integer)
 getPasteIdKey key = (fmap toString >=> readMay) <$> getParam key
 
--- | With the 
+-- | With the
 withPasteKey :: ByteString -> (Paste -> Controller a) -> Controller ()
 withPasteKey key with = do
   pid <- getPasteIdKey key
