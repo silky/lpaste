@@ -1,6 +1,7 @@
 {-# OPTIONS -Wall -fno-warn-name-shadowing #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NamedFieldPuns #-}
 
 -- | Code highlighting.
 
@@ -34,7 +35,8 @@ highlightPaste langs Paste{..} =
           "\n"
     td $
       case lang of
-        Just (Language{languageName="haskell"}) ->
+        Just (Language{languageName}) 
+         | elem languageName ["haskell","agda","idris"] ->
           preEscapedString $ hscolour False (unpack pastePaste)
         Just (Language{..}) ->
           pre $ code ! A.class_ (toValue $ "language-" ++ languageName) $
