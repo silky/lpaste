@@ -6,3 +6,4 @@ src/TAGS
 *.o
 amelie.conf
 irclogs
+cache/
