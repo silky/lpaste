@@ -45,7 +45,11 @@ page :: PastePage -> Html
 page PastePage{ppPaste=p@Paste{..},..} =
   layoutPage $ Page {
     pageTitle = pasteTitle
-  , pageBody = do viewPaste (if ppRevision then [] else ppRevisions) [] ppChans ppLangs (p,ppHints)
+  , pageBody = do viewPaste (if ppRevision then [] else ppRevisions)
+    	       	  	    []
+			    ppChans
+			    ppLangs
+			    (p,case ppRevisionsHints of (hints:_) -> hints; _ -> ppHints)
                   viewAnnotations (p : ppAnnotations)
                                   ppChans
                                   ppLangs
