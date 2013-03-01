@@ -17,7 +17,6 @@ import Amelie.Controller.Paste    as Paste
 import Amelie.Controller.Raw      as Raw
 import Amelie.Controller.Report   as Report
 import Amelie.Controller.Reported as Reported
-import Amelie.Controller.Script   as Script
 import Amelie.Controller.Style    as Style
 import Amelie.Model.Announcer     (newAnnouncer)
 import Amelie.Types
@@ -49,10 +48,10 @@ main = do
 serve :: Config -> Pool -> Cache -> Chan Text -> Snap ()
 serve conf p cache ans = route routes where
   routes = [("/css/amelie.css", run Style.handle)
-           ,("/js/amelie.js", run Script.handle)
-           ,("/css/",serveDirectory "wwwroot/css")
-           ,("/js/",serveDirectory "wwwroot/js")
-           ,("/hs/",serveDirectory "wwwroot/hs")
+           ,("/js/",serveDirectory "static/js")
+           ,("/css/",serveDirectory "static/css")
+           ,("/js/",serveDirectory "static/js")
+           ,("/hs/",serveDirectory "static/hs")
            ,("",run Home.handle)
            ,("/:id",run (Paste.handle False))
            ,("/raw/:id",run Raw.handle)
