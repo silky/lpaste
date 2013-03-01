@@ -6,7 +6,6 @@
 module Main (main) where
 
 import Hpaste.Config
-import Hpaste.Controller
 import Hpaste.Controller.Activity as Activity
 import Hpaste.Controller.Browse   as Browse
 import Hpaste.Controller.Cache    (newCache)
@@ -22,6 +21,7 @@ import Hpaste.Model.Announcer     (newAnnouncer)
 import Hpaste.Types
 import Hpaste.Types.Cache
 
+import Snap.App.Controller
 import Snap.Core
 import Snap.Http.Server           hiding (Config)
 import Snap.Util.FileServe
