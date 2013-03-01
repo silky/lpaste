@@ -5,22 +5,22 @@
 
 module Main (main) where
 
-import Amelie.Config
-import Amelie.Controller
-import Amelie.Controller.Activity as Activity
-import Amelie.Controller.Browse   as Browse
-import Amelie.Controller.Cache    (newCache)
-import Amelie.Controller.Diff     as Diff
-import Amelie.Controller.Home     as Home
-import Amelie.Controller.New      as New
-import Amelie.Controller.Paste    as Paste
-import Amelie.Controller.Raw      as Raw
-import Amelie.Controller.Report   as Report
-import Amelie.Controller.Reported as Reported
-import Amelie.Controller.Style    as Style
-import Amelie.Model.Announcer     (newAnnouncer)
-import Amelie.Types
-import Amelie.Types.Cache
+import Hpaste.Config
+import Hpaste.Controller
+import Hpaste.Controller.Activity as Activity
+import Hpaste.Controller.Browse   as Browse
+import Hpaste.Controller.Cache    (newCache)
+import Hpaste.Controller.Diff     as Diff
+import Hpaste.Controller.Home     as Home
+import Hpaste.Controller.New      as New
+import Hpaste.Controller.Paste    as Paste
+import Hpaste.Controller.Raw      as Raw
+import Hpaste.Controller.Report   as Report
+import Hpaste.Controller.Reported as Reported
+import Hpaste.Controller.Style    as Style
+import Hpaste.Model.Announcer     (newAnnouncer)
+import Hpaste.Types
+import Hpaste.Types.Cache
 
 import Snap.Core
 import Snap.Http.Server           hiding (Config)
