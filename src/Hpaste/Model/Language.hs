@@ -9,10 +9,11 @@ module Hpaste.Model.Language
   where
 
 import Hpaste.Types
-import Hpaste.Model
+
+import Snap.App
 
 -- | Get the languages.
-getLanguages :: Model [Language]
+getLanguages :: Model c s [Language]
 getLanguages =
   queryNoParams ["SELECT id,name,title"
                 ,"FROM language"

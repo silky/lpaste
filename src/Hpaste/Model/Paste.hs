@@ -22,7 +22,6 @@ module Hpaste.Model.Paste
   where
 
 import Hpaste.Types
-import Hpaste.Model
 import Hpaste.Model.Announcer
 
 import Control.Applicative    ((<$>),(<|>))
@@ -39,11 +38,12 @@ import Data.Text.IO           as T (writeFile)
 import Data.Text.Lazy         (fromStrict)
 import Language.Haskell.HLint
 import Prelude                hiding ((++))
+import Snap.App
 import System.Directory
 import System.FilePath
 
 -- | Count public pastes.
-countPublicPastes :: Maybe String -> Model Integer
+countPublicPastes :: Maybe String -> HPModel Integer
 countPublicPastes mauthor = do
   rows <- single ["SELECT COUNT(*)"
                  ,"FROM public_toplevel_paste"
@@ -52,7 +52,7 @@ countPublicPastes mauthor = do
   return $ fromMaybe 0 rows
 
 -- | Get the latest pastes.
-getLatestPastes :: Model [Paste]
+getLatestPastes :: HPModel [Paste]
 getLatestPastes =
   queryNoParams ["SELECT *"
                 ,"FROM public_toplevel_paste"
@@ -60,7 +60,7 @@ getLatestPastes =
                 ,"LIMIT 20"]
 
 -- | Get some paginated pastes.
-getSomePastes :: Maybe String -> Pagination -> Model [Paste]
+getSomePastes :: Maybe String -> Pagination -> HPModel [Paste]
 getSomePastes mauthor Pagination{..} =
   query ["SELECT *"
 	,"FROM public_toplevel_paste"
@@ -71,7 +71,7 @@ getSomePastes mauthor Pagination{..} =
         (mauthor,mauthor)
 
 -- | Get a paste by its id.
-getPasteById :: PasteId -> Model (Maybe Paste)
+getPasteById :: PasteId -> HPModel (Maybe Paste)
 getPasteById pid =
   listToMaybe <$> query ["SELECT *"
                         ,"FROM public_paste"
@@ -79,7 +79,7 @@ getPasteById pid =
                         (Only pid)
 
 -- | Get annotations of a paste.
-getAnnotations :: PasteId -> Model [Paste]
+getAnnotations :: PasteId -> HPModel [Paste]
 getAnnotations pid =
   query ["SELECT *"
         ,"FROM public_paste"
@@ -88,7 +88,7 @@ getAnnotations pid =
         (Only pid)
 
 -- | Get revisions of a paste.
-getRevisions :: PasteId -> Model [Paste]
+getRevisions :: PasteId -> HPModel [Paste]
 getRevisions pid = do
   query ["SELECT *"
         ,"FROM public_paste"
@@ -97,7 +97,7 @@ getRevisions pid = do
         (pid,pid)
 
 -- | Create a paste, or update an existing one.
-createOrUpdate :: [Language] -> [Channel] -> PasteSubmit -> Model (Maybe PasteId)
+createOrUpdate :: [Language] -> [Channel] -> PasteSubmit -> HPModel (Maybe PasteId)
 createOrUpdate langs chans paste@PasteSubmit{..} = do
   case pasteSubmitId of
     Nothing  -> createPaste langs chans paste
@@ -105,7 +105,7 @@ createOrUpdate langs chans paste@PasteSubmit{..} = do
                    return $ Just pid
 
 -- | Create a new paste (possibly annotating an existing one).
-createPaste :: [Language] -> [Channel] -> PasteSubmit -> Model (Maybe PasteId)
+createPaste :: [Language] -> [Channel] -> PasteSubmit -> HPModel (Maybe PasteId)
 createPaste langs chans ps@PasteSubmit{..} = do
   res <- single ["INSERT INTO paste"
                 ,"(title,author,content,channel,language,annotation_of,revision_of)"
@@ -128,7 +128,7 @@ createPaste langs chans ps@PasteSubmit{..} = do
         rev_pid = case pasteSubmitType of RevisionOf pid -> Just pid; _ -> Nothing
 
 -- | Create the hints for a paste.
-createHints :: PasteSubmit -> PasteId -> Model ()
+createHints :: PasteSubmit -> PasteId -> HPModel ()
 createHints ps pid = do
   hints <- generateHintsForPaste ps pid
   forM_ hints $ \hint ->
@@ -141,7 +141,7 @@ createHints ps pid = do
          ,show hint)
 
 -- | Announce the paste.
-announcePaste :: PasteType -> Text -> PasteSubmit -> PasteId -> Model ()
+announcePaste :: PasteType -> Text -> PasteSubmit -> PasteId -> HPModel ()
 announcePaste ptype channel PasteSubmit{..} pid = do
   conf <- env modelStateConfig
   verb <- getVerb
@@ -175,7 +175,7 @@ validNick s = first && all ok s && length s > 0 where
   first = all (\c -> isDigit c || isLetter c) $ take 1 s
 
 -- | Get hints for a Haskell paste from hlint.
-generateHintsForPaste :: PasteSubmit -> PasteId -> Model [Suggestion]
+generateHintsForPaste :: PasteSubmit -> PasteId -> HPModel [Suggestion]
 generateHintsForPaste PasteSubmit{..} (fromIntegral -> pid :: Integer) = io $
   E.catch (generateHints (show pid) pasteSubmitPaste)
           (\SomeException{} -> return [])
@@ -190,7 +190,7 @@ generateHints pid contents = io $ do
   !hints <- hlint [tmp,"--quiet","--ignore=Parse error"]
   return hints
 
-getHints :: PasteId -> Model [Hint]
+getHints :: PasteId -> HPModel [Hint]
 getHints pid =
   query ["SELECT type,content"
         ,"FROM hint"
@@ -198,7 +198,7 @@ getHints pid =
         (Only pid)
 
 -- | Update an existing paste.
-updatePaste :: PasteId -> PasteSubmit -> Model ()
+updatePaste :: PasteId -> PasteSubmit -> HPModel ()
 updatePaste pid PasteSubmit{..} = do
   _ <- exec (["UPDATE paste"
              ,"SET"]

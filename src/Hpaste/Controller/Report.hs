@@ -9,14 +9,13 @@ module Hpaste.Controller.Report
   (handle)
   where
 
-import           Hpaste.Controller
-import           Hpaste.Model
+import           Hpaste.Controller.Cache (resetCache)
 import           Hpaste.Model.Paste   (getPasteById)
 import           Hpaste.Model.Report
+import           Hpaste.Types
+import           Hpaste.Types.Cache      as Key
 import           Hpaste.View.Report
 import qualified Hpaste.View.Thanks   as Thanks
-import Hpaste.Types.Cache      as Key
-import Hpaste.Controller.Cache (resetCache)
 
 import           Control.Applicative
 import           Data.ByteString.UTF8 (toString)
@@ -25,12 +24,12 @@ import           Data.Monoid.Operator ((++))
 import           Data.Text            (unpack)
 import           Prelude              hiding ((++))
 import           Safe
-import           Snap.Core
+import           Snap.App
 import           Text.Blaze.Html5     as H hiding (output,map,body)
 import           Text.Formlet
 
 -- | Handle the report/delete page.
-handle :: Controller ()
+handle :: HPCtrl ()
 handle = do
   pid <- (>>= readMay) . fmap (toString) <$> getParam "id"
   case pid of
@@ -49,7 +48,7 @@ handle = do
         Nothing -> maybe goHome (output . page frm) paste
 
 -- | Report form.
-exprForm :: Controller (Html,Maybe String)
+exprForm :: HPCtrl (Html,Maybe String)
 exprForm = do
   params <- getParams
   submitted <- isJust <$> getParam "submit"

@@ -8,22 +8,23 @@ module Hpaste.View.Browse
   (page)
   where
 
-import Hpaste.Types
-import Hpaste.View.Html
-import Hpaste.View.Layout
-import Hpaste.View.Paste  (pasteLink)
+import           Hpaste.Types
+import           Hpaste.View.Html
+import           Hpaste.View.Layout
+import           Hpaste.View.Paste  (pasteLink)
 
 
-import Control.Monad
-import Data.Maybe
-import Data.Time.Show     (showDateTime)
-import Prelude            hiding ((++))
-import Data.Monoid.Operator
-import Text.Blaze.Html5   as H hiding (map)
+import           Control.Monad
+import           Data.Maybe
+import           Data.Monoid.Operator
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
-import Text.Blaze.Extra
-import Network.URI.Params
+import           Data.Time.Show     (showDateTime)
+import           Network.URI.Params
+import           Prelude            hiding ((++))
+import           Snap.App.Types
+import           Text.Blaze.Extra
+import           Text.Blaze.Html5   as H hiding (map)
 
 -- | Render the browse page.
 page :: Pagination -> [Channel] -> [Language] -> [Paste] -> Maybe String -> Html

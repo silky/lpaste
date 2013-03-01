@@ -7,6 +7,7 @@ module Hpaste.Types.Config
 
 import Database.PostgreSQL.Simple (ConnectInfo)
 import Network.Mail.Mime (Address)
+import Snap.App.Types
 
 -- | Site-wide configuration.
 data Config = Config {
@@ -20,6 +21,9 @@ data Config = Config {
   , configSiteAddy        :: Address
   , configCacheDir        :: FilePath
   }
+
+instance AppConfig Config where
+  getConfigDomain = configDomain
 
 -- | Announcer configuration.
 data Announcer = Announcer {

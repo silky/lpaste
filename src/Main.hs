@@ -8,7 +8,6 @@ module Main (main) where
 import Hpaste.Config
 import Hpaste.Controller.Activity as Activity
 import Hpaste.Controller.Browse   as Browse
-import Hpaste.Controller.Cache    (newCache)
 import Hpaste.Controller.Diff     as Diff
 import Hpaste.Controller.Home     as Home
 import Hpaste.Controller.New      as New
@@ -19,7 +18,6 @@ import Hpaste.Controller.Reported as Reported
 import Hpaste.Controller.Style    as Style
 import Hpaste.Model.Announcer     (newAnnouncer)
 import Hpaste.Types
-import Hpaste.Types.Cache
 
 import Snap.App.Controller
 import Snap.Core
@@ -39,14 +37,13 @@ main = do
   config <- getConfig cpath
   announces <- newAnnouncer (configAnnounce config)
   pool <- newPool (configPostgres config)
-  cache <- newCache
   setUnicodeLocale "en_US"
-  httpServe server (serve config pool cache announces)
+  httpServe server (serve config pool announces)
  where server = setPort 10000 defaultConfig
 
 -- | Serve the controllers.
-serve :: Config -> Pool -> Cache -> Chan Text -> Snap ()
-serve conf p cache ans = route routes where
+serve :: Config -> Pool -> Chan Text -> Snap ()
+serve conf p ans = route routes where
   routes = [("/css/amelie.css", run Style.handle)
            ,("/js/",serveDirectory "static/js")
            ,("/css/",serveDirectory "static/css")
@@ -66,4 +63,4 @@ serve conf p cache ans = route routes where
            ,("/activity",run Activity.handle)
            ,("/diff/:this/:that",run Diff.handle)
            ]
-  run = runHandler conf p cache ans
+  run = runHandler ans conf p

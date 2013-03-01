@@ -7,13 +7,14 @@ module Hpaste.Controller.Reported
   (handle)
   where
 
-import Hpaste.Controller     (output,getPagination)
-import Hpaste.Model
 import Hpaste.Model.Report   (getSomeReports,countReports)
+import Hpaste.Types
 import Hpaste.View.Reported  (page)
 
+import Snap.App
+
 -- | List the reported pastes.
-handle :: Controller ()
+handle :: HPCtrl ()
 handle = do
   pn <- getPagination
   total <- model countReports

@@ -7,17 +7,16 @@ module Hpaste.Controller.Activity
   (handle)
   where
 
-import Hpaste.Controller       (outputText)
 import Hpaste.Controller.Cache (cache)
-import Hpaste.Model
 import Hpaste.Model.Activity   (getCommits)
 import Hpaste.Types.Cache      as Key
 import Hpaste.View.Activity    (page)
 
 import Control.Monad.Env       (env)
+import Snap.App
 
 -- | Display commit history.
-handle :: Controller ()
+handle :: HPCtrl ()
 handle = do
   html <- cache Key.Activity $ do
     uri <- env $ configCommits . controllerStateConfig

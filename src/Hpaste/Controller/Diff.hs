@@ -8,13 +8,13 @@ module Hpaste.Controller.Diff
   (handle)
   where
 
-import Hpaste.Controller
 import Hpaste.Controller.Paste (withPasteKey)
-import Hpaste.Model
 import Hpaste.View.Diff        (page)
 
+import Snap.App
+
 -- | Diff one paste with another.
-handle :: Controller ()
+handle :: HPCtrl ()
 handle = do
   withPasteKey "this" $ \this ->
     withPasteKey "that" $ \that ->

@@ -9,10 +9,11 @@ module Hpaste.Model.Channel
   where
 
 import Hpaste.Types
-import Hpaste.Model
+
+import Snap.App
 
 -- | Get the channels.
-getChannels :: Model [Channel]
+getChannels :: Model c s [Channel]
 getChannels =
   queryNoParams ["SELECT *"
                 ,"FROM channel"]

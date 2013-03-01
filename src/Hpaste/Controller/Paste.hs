@@ -13,10 +13,7 @@ module Hpaste.Controller.Paste
   where
 
 import Hpaste.Types
-
-import Hpaste.Controller
 import Hpaste.Controller.Cache (cache,resetCache)
-import Hpaste.Model
 import Hpaste.Model.Channel    (getChannels)
 import Hpaste.Model.Language   (getLanguages)
 import Hpaste.Model.Paste
@@ -33,12 +30,12 @@ import Data.String             (fromString)
 import Data.Text               (Text)
 import Prelude                 hiding ((++))
 import Safe
-import Snap.Core
+import Snap.App
 import Text.Blaze.Html5        as H hiding (output)
 import Text.Formlet
 
 -- | Handle the paste page.
-handle :: Bool -> Controller ()
+handle :: Bool -> HPCtrl ()
 handle revision = do
   pid <- getPasteId
   justOrGoHome pid $ \(pid :: Integer) -> do
@@ -68,7 +65,7 @@ handle revision = do
       justOrGoHome html outputText
 
 -- | Control paste annotating / submission.
-pasteForm :: [Channel] -> [Language] -> Maybe Text -> Maybe Paste -> Maybe Paste -> Controller Html
+pasteForm :: [Channel] -> [Language] -> Maybe Text -> Maybe Paste -> Maybe Paste -> HPCtrl Html
 pasteForm channels languages defChan annotatePaste editPaste = do
   params <- getParams
   submitted <- isJust <$> getParam "submit"
@@ -100,20 +97,20 @@ pasteForm channels languages defChan annotatePaste editPaste = do
   return html
 
 -- | Redirect to the paste's page.
-redirectToPaste :: PasteId -> Controller ()
+redirectToPaste :: PasteId -> HPCtrl ()
 redirectToPaste (PasteId pid) =
   redirect $ "/" ++ fromString (show pid)
 
 -- | Get the paste id.
-getPasteId :: Controller (Maybe Integer)
+getPasteId :: HPCtrl (Maybe Integer)
 getPasteId = (fmap toString >=> readMay) <$> getParam "id"
 
 -- | Get the paste id by a key.
-getPasteIdKey :: ByteString -> Controller (Maybe Integer)
+getPasteIdKey :: ByteString -> HPCtrl (Maybe Integer)
 getPasteIdKey key = (fmap toString >=> readMay) <$> getParam key
 
 -- | With the
-withPasteKey :: ByteString -> (Paste -> Controller a) -> Controller ()
+withPasteKey :: ByteString -> (Paste -> HPCtrl a) -> HPCtrl ()
 withPasteKey key with = do
   pid <- getPasteIdKey key
   justOrGoHome pid $ \(pid :: Integer) -> do

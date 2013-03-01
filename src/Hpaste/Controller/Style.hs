@@ -7,13 +7,12 @@ module Hpaste.Controller.Style
   (handle)
   where
 
-import Hpaste.Controller (outputText)
-import Hpaste.Model
+import Hpaste.Types
 import Hpaste.View.Style (style)
 
-import Snap.Core         (modifyResponse,setContentType)
+import Snap.App
 
-handle :: Controller ()
+handle :: HPCtrl ()
 handle = do
   modifyResponse $ setContentType "text/css"
   outputText $ style

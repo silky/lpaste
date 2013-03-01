@@ -7,18 +7,18 @@ module Hpaste.Controller.Home
   (handle)
   where
 
-import Hpaste.Controller       (outputText,getMyURI)
 import Hpaste.Controller.Cache (cache)
 import Hpaste.Controller.Paste (pasteForm)
-import Hpaste.Model
 import Hpaste.Model.Channel    (getChannels)
 import Hpaste.Model.Language   (getLanguages)
 import Hpaste.Model.Paste      (getLatestPastes)
 import Hpaste.Types.Cache      as Key
 import Hpaste.View.Home        (page)
 
+import Snap.App
+
 -- | Handle the home page, display a simple list and paste form.
-handle :: Controller ()
+handle :: HPCtrl ()
 handle = do
   html <- cache Key.Home $ do
     pastes <- model $ getLatestPastes

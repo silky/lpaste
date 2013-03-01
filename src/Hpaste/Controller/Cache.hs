@@ -13,15 +13,15 @@ module Hpaste.Controller.Cache
 
 import           Hpaste.Types.Cache
 import           Hpaste.Types.Config
-import           Hpaste.Types.MVC
 
 import           Control.Concurrent
-import           Control.Monad.IO         (io)
 import           Control.Monad
+import           Control.Monad.IO         (io)
 import           Control.Monad.Reader     (asks)
 import qualified Data.Map                 as M
 import           Data.Text.Lazy           (Text)
 import qualified Data.Text.Lazy.IO as T
+import           Snap.App.Types
 import           System.Directory
 import           Text.Blaze.Html5         (Html)
 import           Text.Blaze.Renderer.Text (renderHtml)
@@ -33,7 +33,7 @@ newCache = do
   return $ Cache var
 
 -- | Cache conditionally.
-cacheIf :: Bool -> Key -> Controller (Maybe Html) -> Controller (Maybe Text)
+cacheIf :: Bool -> Key -> Controller Config s (Maybe Html) -> Controller Config s (Maybe Text)
 cacheIf pred key generate =
   if pred
      then cache key generate
@@ -41,7 +41,7 @@ cacheIf pred key generate =
 
 -- | Generate and save into the cache, or retrieve existing from the
 -- | cache.
-cache :: Key -> Controller (Maybe Html) -> Controller (Maybe Text)
+cache :: Key -> Controller Config s (Maybe Html) -> Controller Config s (Maybe Text)
 cache key generate = do
   tmpdir <- asks (configCacheDir . controllerStateConfig)
   let cachePath = tmpdir ++ "/" ++ keyToString key
@@ -56,7 +56,7 @@ cache key generate = do
                Nothing -> return text
 
 -- | Reset an item in the cache.
-resetCache :: Key -> Controller ()
+resetCache :: Key -> Controller Config s ()
 resetCache key = do
   tmpdir <- asks (configCacheDir . controllerStateConfig)
   io $ do
@@ -65,7 +65,7 @@ resetCache key = do
    when exists $ removeFile cachePath
 
 -- | Reset an item in the cache.
-resetCacheModel :: Key -> Model ()
+resetCacheModel :: Key -> Model Config s ()
 resetCacheModel key = do
   tmpdir <- asks (configCacheDir . modelStateConfig)
   io $ do

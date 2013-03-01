@@ -7,15 +7,15 @@ module Hpaste.Controller.Browse
   (handle)
   where
 
-import Hpaste.Controller     (output,getPagination,getStringMaybe)
-import Hpaste.Model
 import Hpaste.Model.Channel  (getChannels)
 import Hpaste.Model.Language (getLanguages)
 import Hpaste.Model.Paste    (getSomePastes,countPublicPastes)
 import Hpaste.View.Browse    (page)
 
+import Snap.App
+
 -- | Browse all pastes.
-handle :: Controller ()
+handle :: HPCtrl ()
 handle = do
   pn <- getPagination
   author <- getStringMaybe "author"

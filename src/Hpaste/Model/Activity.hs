@@ -14,11 +14,12 @@ import Data.Maybe            (mapMaybe)
 import Data.Text.Lazy        (pack)
 import Data.Time
 import Network.Curl.Download
+import Snap.App.Types
 import System.Locale
 import Text.Feed.Query
 
 -- | Get commits of this project from a commit feed.
-getCommits :: String -> Model [Commit]
+getCommits :: String -> Model c s [Commit]
 getCommits uri = io $ do
   result <- openAsFeed uri
   case result of
@@ -26,7 +27,7 @@ getCommits uri = io $ do
     Right feed -> return $
       let items = getFeedItems feed
       in mapMaybe makeCommit items
-        
+
   where makeCommit item = do
           title <- getItemTitle item
           datestr <- getItemDate item

@@ -24,6 +24,7 @@ import           Data.Text.Lazy.Encoding
 import qualified Data.Text.Lazy.IO       as T
 import           Network
 import           Prelude                 hiding ((++))
+import           Snap.App.Types
 import           System.IO
 
 -- | Start a thread and return a channel to it.
@@ -50,7 +51,7 @@ announcer c@Announcer{..} ans cont = do
   forM_ lines $ \line -> send h line
 
 -- | Announce something to the IRC.
-announce :: Text -> Text -> Model ()
+announce :: Text -> Text -> Model c HPState ()
 announce channel line = do
   chan <- env modelStateAnns
   io $ writeChan chan $ "PRIVMSG " ++ channel ++ " :" ++ line

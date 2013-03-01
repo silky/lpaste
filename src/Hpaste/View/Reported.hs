@@ -16,6 +16,7 @@ import Data.Monoid.Operator ((++))
 import Data.Time.Show       (showDateTime)
 import Prelude              hiding ((++))
 import Text.Blaze.Html5     as H hiding (map)
+import Snap.App.Types
 
 -- | Render the reported page.
 page :: Pagination -> [Report] -> Html

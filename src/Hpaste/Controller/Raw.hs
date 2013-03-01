@@ -8,11 +8,8 @@ module Hpaste.Controller.Raw
   (handle)
   where
 
-import Hpaste.Types
-
-import Hpaste.Controller
-import Hpaste.Model
 import Hpaste.Model.Paste   (getPasteById)
+import Hpaste.Types
 
 import Control.Applicative
 import Data.ByteString.UTF8 (toString)
@@ -20,10 +17,10 @@ import Data.Maybe
 import Data.Text.Lazy       (fromStrict)
 import Prelude              hiding ((++))
 import Safe
-import Snap.Core
+import Snap.App
 
 -- | Handle the paste page.
-handle :: Controller ()
+handle :: HPCtrl ()
 handle = do
   pid <- (>>= readMay) . fmap (toString) <$> getParam "id"
   case pid of

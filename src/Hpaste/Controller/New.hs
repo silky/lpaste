@@ -7,9 +7,7 @@ module Hpaste.Controller.New
   (handle,NewStyle(..))
   where
 
-import Hpaste.Controller
 import Hpaste.Controller.Paste (pasteForm,getPasteId)
-import Hpaste.Model
 import Hpaste.Model.Channel    (getChannels)
 import Hpaste.Model.Language   (getLanguages)
 import Hpaste.Model.Paste      (getPasteById)
@@ -19,13 +17,13 @@ import Hpaste.View.New         as New (page)
 
 import Control.Applicative
 import Data.Text.Encoding      (decodeUtf8)
-import Snap.Core
+import Snap.App
 
 data NewStyle = NewPaste | AnnotatePaste | EditPaste
  deriving Eq
 
 -- | Make a new paste.
-handle :: NewStyle -> Controller ()
+handle :: NewStyle -> HPCtrl ()
 handle style = do
   chans <- model $ getChannels
   langs <- model $ getLanguages

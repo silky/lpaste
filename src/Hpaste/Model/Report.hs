@@ -10,24 +10,24 @@ module Hpaste.Model.Report
  (getSomeReports,createReport,countReports)
   where
 
-import Hpaste.Types
-import Hpaste.Model
-import Hpaste.Controller.Cache
-import Hpaste.Types.Cache as Key
+import           Hpaste.Types
+import           Hpaste.Controller.Cache
+import           Hpaste.Types.Cache as Key
 
-import Control.Monad
+import           Control.Monad
 
-import Control.Monad.Env
-import Control.Monad.IO
-import Data.Maybe
-import Data.Monoid.Operator ((++))
-import qualified Data.Text.Lazy as LT
+import           Control.Monad.Env
+import           Control.Monad.IO
+import           Data.Maybe
+import           Data.Monoid.Operator ((++))
 import qualified Data.Text as T
-import Prelude              hiding ((++))
-import Network.Mail.Mime
+import qualified Data.Text.Lazy as LT
+import           Network.Mail.Mime
+import           Prelude              hiding ((++))
+import           Snap.App
 
 -- | Get some paginated reports.
-getSomeReports :: Pagination -> Model [Report]
+getSomeReports :: Pagination -> Model c s [Report]
 getSomeReports Pagination{..} =
   queryNoParams ["SELECT created,paste,comments"
                 ,"FROM report"
@@ -36,14 +36,14 @@ getSomeReports Pagination{..} =
                 ,"LIMIT " ++ show pnLimit]
 
 -- | Count reports.
-countReports :: Model Integer
+countReports :: Model c s Integer
 countReports = do
   rows <- singleNoParams ["SELECT COUNT(*)"
                          ,"FROM report"]
   return $ fromMaybe 0 rows
 
 -- | Create a new report.
-createReport :: ReportSubmit -> Model (Maybe ReportId)
+createReport :: ReportSubmit -> Model Config s (Maybe ReportId)
 createReport rs@ReportSubmit{..} = do
   res <- single ["INSERT INTO report"
                 ,"(paste,comments)"
@@ -62,7 +62,7 @@ createReport rs@ReportSubmit{..} = do
   sendReport rs
   return res
 
-sendReport :: ReportSubmit -> Model ()
+sendReport :: ReportSubmit -> Model Config s ()
 sendReport ReportSubmit{..} = do
   conf <- env modelStateConfig
   _ <- io $ simpleMail (configAdmin conf)
