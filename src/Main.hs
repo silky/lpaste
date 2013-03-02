@@ -19,8 +19,7 @@ import Hpaste.Controller.Style    as Style
 import Hpaste.Model.Announcer     (newAnnouncer)
 import Hpaste.Types
 
-import Snap.App.Controller
-import Snap.Core
+import Snap.App (Snap,runHandler,route)
 import Snap.Http.Server           hiding (Config)
 import Snap.Util.FileServe
 
