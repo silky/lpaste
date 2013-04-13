@@ -7,13 +7,12 @@ module Hpaste.Controller.Script
   (handle)
   where
 
-import Hpaste.Controller  (outputText)
-import Hpaste.Model
 import Hpaste.View.Script (script)
 
 import Snap.Core          (modifyResponse,setContentType)
+import Snap.App
 
-handle :: Controller ()
+handle :: Controller c s ()
 handle = do
   modifyResponse $ setContentType "text/javascript"
   outputText $ script

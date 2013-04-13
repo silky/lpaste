@@ -60,7 +60,7 @@ latest uri channels languages ps = do
 			  else toHtml pasteAuthor
                      td $ toHtml $ showDateTime $ pasteDate
                      td $ showLanguage languages pasteLanguage
-                     td $ showChannel channels pasteChannel
+                     td $ showChannel Nothing channels pasteChannel
           authorUri author = updateUrlParam "author" author
 	  	    	   $ updateUrlParam "page"   "0"
 			   $ uri { uriPath = "/browse" }

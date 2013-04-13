@@ -55,7 +55,7 @@ browse pn channels languages ps mauthor = do
 			    else toHtml pasteAuthor
                      td $ toHtml $ showDateTime $ pasteDate
                      td $ showLanguage languages pasteLanguage
-                     td $ showChannel channels pasteChannel
+                     td $ showChannel Nothing channels pasteChannel
           authorUri author = updateUrlParam "author" author
 	  	    	   $ updateUrlParam "page"   "0"
 			   $ pnURI pn

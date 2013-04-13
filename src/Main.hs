@@ -16,6 +16,7 @@ import Hpaste.Controller.Raw      as Raw
 import Hpaste.Controller.Report   as Report
 import Hpaste.Controller.Reported as Reported
 import Hpaste.Controller.Style    as Style
+import Hpaste.Controller.Script   as Script
 import Hpaste.Model.Announcer     (newAnnouncer)
 import Hpaste.Types
 
@@ -44,8 +45,8 @@ main = do
 serve :: Config -> Pool -> Chan Text -> Snap ()
 serve conf p ans = route routes where
   routes = [("/css/amelie.css", run Style.handle)
-           ,("/js/",serveDirectory "static/js")
            ,("/css/",serveDirectory "static/css")
+           ,("/js/amelie.js",run Script.handle)
            ,("/js/",serveDirectory "static/js")
            ,("/hs/",serveDirectory "static/hs")
            ,("",run Home.handle)

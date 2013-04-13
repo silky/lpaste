@@ -1,4 +1,4 @@
-cd /home/chris/amelie/
+cd /home/chris/hpaste/
 mkdir log -p
 ulimit -m 5
-dist/build/amelie/amelie amelie.conf
+dist/build/hpaste/hpaste hpaste.conf

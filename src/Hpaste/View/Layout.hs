@@ -25,6 +25,7 @@ layoutPage Page{..} = do
       link ! A.rel "stylesheet" ! A.type_ "text/css" ! A.href "/css/amelie.css"
       js "jquery.js"
       js "amelie.js"
+      js "fudge.js"
       js "highlight.pack.js"
       title $ toHtml $ pageTitle ++ " :: hpaste — Haskell Pastebin"
       script $

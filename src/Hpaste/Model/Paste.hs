@@ -34,6 +34,7 @@ import Data.List              (find,intercalate)
 import Data.Maybe             (fromMaybe,listToMaybe)
 import Data.Monoid.Operator   ((++))
 import Data.Text              (Text,unpack,pack)
+import qualified Data.Text              as T
 import Data.Text.IO           as T (writeFile)
 import Data.Text.Lazy         (fromStrict)
 import Language.Haskell.HLint
@@ -145,8 +146,9 @@ announcePaste :: PasteType -> Text -> PasteSubmit -> PasteId -> HPModel ()
 announcePaste ptype channel PasteSubmit{..} pid = do
   conf <- env modelStateConfig
   verb <- getVerb
-  announce (fromStrict channel) $ fromStrict $ do
-    nick ++ " " ++ verb ++ " “" ++ pasteSubmitTitle ++ "” at " ++ link conf
+  unless (seemsLikeSpam pasteSubmitTitle) $
+    announce (fromStrict channel) $ fromStrict $ do
+      nick ++ " " ++ verb ++ " “" ++ pasteSubmitTitle ++ "” at " ++ link conf
   where nick | validNick (unpack pasteSubmitAuthor) = pasteSubmitAuthor
              | otherwise = "“" ++ pasteSubmitAuthor ++ "”"
         link Config{..} = "http://" ++ pack configDomain ++ "/" ++ pid'
@@ -167,6 +169,7 @@ announcePaste ptype channel PasteSubmit{..} pid = do
 	      Just Paste{..} -> "revised “" ++ pasteTitle ++ "”:"
               Nothing -> "revised a paste:"
         showPid p = pack $ show $ (fromIntegral p :: Integer)
+        seemsLikeSpam = T.isInfixOf "http://"
 
 -- | Is a nickname valid? Digit/letter or one of these: -_/\\;()[]{}?`'
 validNick :: String -> Bool

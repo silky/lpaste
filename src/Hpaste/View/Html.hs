@@ -99,11 +99,18 @@ showLanguage languages lid =
     where langs = map (languageId &&& languageTitle) languages
 
 -- | Show a channel.
-showChannel :: [Channel] -> Maybe ChannelId -> Html
-showChannel channels lid =
-  toHtml $ fromMaybe "-" (lid >>= (`lookup` langs))
+showChannel :: Maybe Paste -> [Channel] -> Maybe ChannelId -> Html
+showChannel paste channels lid = do
+  toHtml $ fromMaybe "-" chan
+  case (paste,chan) of
+    (Just paste,Just c) | c == "#haskell" -> do
+      " "
+      href ("http://ircbrowse.net/browse/haskell/?q=hpaste+" ++ show (pasteId paste)) $
+        ("Context in IRC logs" :: String)
+    _ -> return ()
 
     where langs = map (channelId &&& channelName) channels
+          chan = (lid >>= (`lookup` langs))
 
 -- | Render results with pagination.
 paginate :: Pagination -> Html -> Html
