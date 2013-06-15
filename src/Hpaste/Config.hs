@@ -35,7 +35,8 @@ getConfig conf = do
                   ["log_dir"]
         [admin,siteaddy]
           <- mapM (get c "ADDRESSES")
-	     	  ["admin","site_addy"]       
+	     	  ["admin","site_addy"]
+        [key] <- mapM (get c "ADMIN") ["key"]
                   
         return Config {
            configAnnounce = Announcer user pass host (read port)
@@ -47,6 +48,7 @@ getConfig conf = do
 	 , configAdmin = Address Nothing (T.pack admin)
 	 , configSiteAddy = Address Nothing (T.pack siteaddy)
 	 , configCacheDir = cache
+	 , configKey = key
          }
   case config of
     Left cperr -> error $ show cperr

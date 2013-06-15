@@ -19,24 +19,25 @@ import Text.Blaze.Html5     as H hiding (map)
 import Snap.App.Types
 
 -- | Render the reported page.
-page :: Pagination -> [Report] -> Html
-page pn rs =
+page :: Pagination -> [Report] -> String -> Html
+page pn rs key =
   layoutPage $ Page {
     pageTitle = "Reported pastes"
-  , pageBody = reported pn rs
+  , pageBody = reported pn rs key
   , pageName = "reported"
   }
 
 -- | View the paginated reports.
-reported :: Pagination -> [Report] -> Html
-reported pn rs = do
+reported :: Pagination -> [Report] -> String -> Html
+reported pn rs key = do
   darkSection "Reported pastes" $ do
     paginate pn $ do
       table ! aClass "latest-pastes" $ do
-        tr $ mapM_ (th . toHtml) $ words "Date Paste Comments"
+        tr $ mapM_ (th . toHtml) $ words "Date Paste Delete Comments"
         reports rs
 
     where reports = mapM_ $ \Report{..} -> tr $ do
                       td $ toHtml $ showDateTime reportDate
-                      td $ toHtml $ href ("/" ++ show reportPasteId) $ show reportPasteId
+                      td $ href ("/" ++ show reportPasteId ++ "?show_private=true") $ show reportPasteId
+		      td $ href ("/delete?id=" ++ show reportPasteId ++ "&key=" ++ key) ("Delete"::String)
                       td $ toHtml reportComments

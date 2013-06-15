@@ -10,7 +10,9 @@
 module Hpaste.Model.Paste
   (getLatestPastes
   ,getPasteById
+  ,getPrivatePasteById
   ,createOrUpdate
+  ,deletePaste
   ,createPaste
   ,getAnnotations
   ,getRevisions
@@ -42,6 +44,9 @@ import Prelude                hiding ((++))
 import Snap.App
 import System.Directory
 import System.FilePath
+
+deletePaste :: Integer -> HPModel ()
+deletePaste pid = void (exec ["DELETE FROM paste WHERE id = ?"] (Only pid))
 
 -- | Count public pastes.
 countPublicPastes :: Maybe String -> HPModel Integer
@@ -76,6 +81,14 @@ getPasteById :: PasteId -> HPModel (Maybe Paste)
 getPasteById pid =
   listToMaybe <$> query ["SELECT *"
                         ,"FROM public_paste"
+                        ,"WHERE id = ?"]
+                        (Only pid)
+
+-- | Get a private paste by its id, regardless of any status.
+getPrivatePasteById :: PasteId -> HPModel (Maybe Paste)
+getPrivatePasteById pid =
+  listToMaybe <$> query ["SELECT *"
+                        ,"FROM private_paste"
                         ,"WHERE id = ?"]
                         (Only pid)
 

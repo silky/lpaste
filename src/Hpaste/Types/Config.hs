@@ -20,6 +20,7 @@ data Config = Config {
   , configAdmin           :: Address
   , configSiteAddy        :: Address
   , configCacheDir        :: FilePath
+  , configKey             :: String
   }
 
 instance AppConfig Config where

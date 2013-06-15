@@ -174,6 +174,14 @@ CREATE VIEW public_paste AS
 
 ALTER TABLE public.public_paste OWNER TO hpaste;
 
+-- Name: private_paste
+
+CREATE VIEW private_paste AS
+    SELECT paste.id, paste.title, paste.content, paste.author, paste.created, paste.views, paste.language, paste.channel, paste.annotation_of, paste.revision_of FROM paste WHERE not paste.public;
+
+
+ALTER TABLE public.public_paste OWNER TO hpaste;
+
 --
 -- Name: public_toplevel_paste; Type: VIEW; Schema: public; Owner: hpaste
 --

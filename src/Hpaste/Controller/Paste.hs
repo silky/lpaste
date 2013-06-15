@@ -41,7 +41,10 @@ handle revision = do
   pid <- getPasteId
   justOrGoHome pid $ \(pid :: Integer) -> do
       html <- cache (if revision then Key.Revision pid else Key.Paste pid) $ do
-        paste <- model $ getPasteById (fromIntegral pid)
+        getPrivate <- getParam "show_private"
+        paste <- model $ if isJust getPrivate
+	      	       	    then getPrivatePasteById (fromIntegral pid) 
+	      	       	    else getPasteById (fromIntegral pid)
         case paste of
           Nothing -> return Nothing
           Just paste -> do

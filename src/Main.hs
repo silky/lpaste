@@ -62,5 +62,6 @@ serve conf p ans = route routes where
            ,("/browse",run Browse.handle)
            ,("/activity",run Activity.handle)
            ,("/diff/:this/:that",run Diff.handle)
+	   ,("/delete",run Report.handleDelete)
            ]
   run = runHandler ans conf p
