@@ -398,3 +398,6 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- PostgreSQL database dump complete
 --
 
+
+ALTER TABLE paste ADD spamrating integer DEFAULT '0';
+

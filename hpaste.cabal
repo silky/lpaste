@@ -50,3 +50,4 @@ Executable hpaste
    ,utf8-string
    ,mime-mail
    ,cgi
+   ,process

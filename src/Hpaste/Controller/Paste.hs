@@ -23,6 +23,7 @@ import Hpaste.View.Paste       (pasteFormlet,page)
 
 import Control.Applicative
 import Control.Monad           ((>=>))
+import Control.Monad.IO
 import Data.ByteString         (ByteString)
 import Data.ByteString.UTF8    (toString)
 import Data.Maybe
@@ -93,12 +94,15 @@ pasteForm channels languages defChan annotatePaste editPaste = do
   case val of
     Nothing -> return ()
     Just PasteSubmit{pasteSubmitSpamTrap=Just{}} -> goHome
-    Just paste | isSpam paste -> goHome
     Just paste -> do
-      resetCache Key.Home
-      maybe (return ()) (resetCache . Key.Paste . fromIntegral) $ pasteSubmitId paste
-      pid <- model $ createPaste languages channels paste
-      maybe (return ()) redirectToPaste pid
+      spamrating <- io $ spamRating paste
+      if spamrating >= 100
+      	 then goHome
+	 else do
+	    resetCache Key.Home
+	    maybe (return ()) (resetCache . Key.Paste . fromIntegral) $ pasteSubmitId paste
+	    pid <- model $ createPaste languages channels paste spamrating
+	    maybe (return ()) redirectToPaste pid
   return html
 
 -- | Redirect to the paste's page.

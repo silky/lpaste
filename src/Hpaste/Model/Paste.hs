@@ -60,7 +60,7 @@ countPublicPastes mauthor = do
 -- | Get the latest pastes.
 getLatestPastes :: HPModel [Paste]
 getLatestPastes =
-  queryNoParams ["SELECT *"
+  queryNoParams ["SELECT ",pasteFields
                 ,"FROM public_toplevel_paste"
                 ,"ORDER BY id DESC"
                 ,"LIMIT 20"]
@@ -68,7 +68,7 @@ getLatestPastes =
 -- | Get some paginated pastes.
 getSomePastes :: Maybe String -> Pagination -> HPModel [Paste]
 getSomePastes mauthor Pagination{..} =
-  query ["SELECT *"
+  query ["SELECT",pasteFields
 	,"FROM public_toplevel_paste"
 	,"WHERE (? IS NULL) OR (author = ?)"
 	,"ORDER BY id DESC"
@@ -79,7 +79,7 @@ getSomePastes mauthor Pagination{..} =
 -- | Get a paste by its id.
 getPasteById :: PasteId -> HPModel (Maybe Paste)
 getPasteById pid =
-  listToMaybe <$> query ["SELECT *"
+  listToMaybe <$> query ["SELECT ",pasteFields
                         ,"FROM public_paste"
                         ,"WHERE id = ?"]
                         (Only pid)
@@ -87,7 +87,7 @@ getPasteById pid =
 -- | Get a private paste by its id, regardless of any status.
 getPrivatePasteById :: PasteId -> HPModel (Maybe Paste)
 getPrivatePasteById pid =
-  listToMaybe <$> query ["SELECT *"
+  listToMaybe <$> query ["SELECT",pasteFields
                         ,"FROM private_paste"
                         ,"WHERE id = ?"]
                         (Only pid)
@@ -95,7 +95,7 @@ getPrivatePasteById pid =
 -- | Get annotations of a paste.
 getAnnotations :: PasteId -> HPModel [Paste]
 getAnnotations pid =
-  query ["SELECT *"
+  query ["SELECT",pasteFields
         ,"FROM public_paste"
         ,"WHERE annotation_of = ?"
         ,"ORDER BY id ASC"]
@@ -104,30 +104,30 @@ getAnnotations pid =
 -- | Get revisions of a paste.
 getRevisions :: PasteId -> HPModel [Paste]
 getRevisions pid = do
-  query ["SELECT *"
+  query ["SELECT",pasteFields
         ,"FROM public_paste"
         ,"WHERE revision_of = ? or id = ?"
         ,"ORDER BY id DESC"]
         (pid,pid)
 
 -- | Create a paste, or update an existing one.
-createOrUpdate :: [Language] -> [Channel] -> PasteSubmit -> HPModel (Maybe PasteId)
-createOrUpdate langs chans paste@PasteSubmit{..} = do
+createOrUpdate :: [Language] -> [Channel] -> PasteSubmit -> Integer -> HPModel (Maybe PasteId)
+createOrUpdate langs chans paste@PasteSubmit{..} spamrating = do
   case pasteSubmitId of
-    Nothing  -> createPaste langs chans paste
+    Nothing  -> createPaste langs chans paste spamrating
     Just pid -> do updatePaste pid paste
                    return $ Just pid
 
 -- | Create a new paste (possibly annotating an existing one).
-createPaste :: [Language] -> [Channel] -> PasteSubmit -> HPModel (Maybe PasteId)
-createPaste langs chans ps@PasteSubmit{..} = do
+createPaste :: [Language] -> [Channel] -> PasteSubmit -> Integer -> HPModel (Maybe PasteId)
+createPaste langs chans ps@PasteSubmit{..} spamrating = do
   res <- single ["INSERT INTO paste"
-                ,"(title,author,content,channel,language,annotation_of,revision_of)"
+                ,"(title,author,content,channel,language,annotation_of,revision_of,spamrating)"
                 ,"VALUES"
-                ,"(?,?,?,?,?,?,?)"
+                ,"(?,?,?,?,?,?,?,?)"
                 ,"returning id"]
                 (pasteSubmitTitle,pasteSubmitAuthor,pasteSubmitPaste
-                ,pasteSubmitChannel,pasteSubmitLanguage,ann_pid,rev_pid)
+                ,pasteSubmitChannel,pasteSubmitLanguage,ann_pid,rev_pid,spamrating)
   when (lang == Just "haskell") $ just res $ createHints ps
   just (pasteSubmitChannel >>= lookupChan) $ \chan ->
     just res $ \pid -> do
@@ -233,3 +233,5 @@ updatePaste pid PasteSubmit{..} = do
 
     where fields = "title author content language channel"
           set key = unwords [key,"=","?"]
+
+pasteFields = "id,title,content,author,created,views,language,channel,annotation_of,revision_of"

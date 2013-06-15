@@ -65,14 +65,16 @@ createReport rs@ReportSubmit{..} = do
 sendReport :: ReportSubmit -> Model Config s ()
 sendReport ReportSubmit{..} = do
   conf <- env modelStateConfig
-  _ <- io $ simpleMail (configAdmin conf)
+  m <- io $ simpleMail (configAdmin conf)
 		       (configSiteAddy conf)
 		       (T.pack ("Paste reported: #" ++ show rsPaste))
 		       (LT.pack body)
 		       (LT.pack body)
 		       []
-  return ()
+  io $ renderSendMail m
 
   where body =
   	  "Paste " ++ show rsPaste ++ "\n\n" ++
+	  "http://hpaste.org/" ++ show rsPaste ++ "?show_private=true" ++
+	  "\n\n" ++
 	  rsComments
