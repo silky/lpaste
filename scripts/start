@@ -1,4 +1,4 @@
+#! /bin/bash
 cd /home/chris/hpaste/
 mkdir log -p
-ulimit -m 5
 dist/build/hpaste/hpaste hpaste.conf
