@@ -17,6 +17,7 @@ import Hpaste.Controller.Cache (cache,resetCache)
 import Hpaste.Model.Channel    (getChannels)
 import Hpaste.Model.Language   (getLanguages)
 import Hpaste.Model.Paste
+import Hpaste.Model.Spam
 import Hpaste.Types.Cache      as Key
 import Hpaste.View.Paste       (pasteFormlet,page)
 
@@ -89,6 +90,7 @@ pasteForm channels languages defChan annotatePaste editPaste = do
   case val of
     Nothing -> return ()
     Just PasteSubmit{pasteSubmitSpamTrap=Just{}} -> goHome
+    Just paste | isSpam paste -> goHome
     Just paste -> do
       resetCache Key.Home
       maybe (return ()) (resetCache . Key.Paste . fromIntegral) $ pasteSubmitId paste

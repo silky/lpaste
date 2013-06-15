@@ -1,3 +1,4 @@
 cd /home/chris/hpaste
 logger -t hpaste "Clearing cache ..."
 rm cache/*
+rm log/*

@@ -191,6 +191,7 @@ generateHints pid contents = io $ do
   exists <- doesFileExist tmp
   unless exists $ T.writeFile tmp $ contents
   !hints <- hlint [tmp,"--quiet","--ignore=Parse error"]
+  removeFile tmp
   return hints
 
 getHints :: PasteId -> HPModel [Hint]
