@@ -25,6 +25,7 @@ module Hpaste.Model.Paste
 
 import Hpaste.Types
 import Hpaste.Model.Announcer
+import Hpaste.Model.Spam
 
 import Control.Applicative    ((<$>),(<|>))
 import Control.Exception as E
@@ -53,28 +54,30 @@ countPublicPastes :: Maybe String -> HPModel Integer
 countPublicPastes mauthor = do
   rows <- single ["SELECT COUNT(*)"
                  ,"FROM public_toplevel_paste"
-		 ,"WHERE (? IS NULL) OR (author = ?)"]
-		 (mauthor,mauthor)
+		 ,"WHERE (? IS NULL) OR (author = ?) AND spamrating < ?"]
+		 (mauthor,mauthor,spamMinLevel)
   return $ fromMaybe 0 rows
 
 -- | Get the latest pastes.
 getLatestPastes :: HPModel [Paste]
 getLatestPastes =
-  queryNoParams ["SELECT ",pasteFields
-                ,"FROM public_toplevel_paste"
-                ,"ORDER BY id DESC"
-                ,"LIMIT 20"]
+  query ["SELECT ",pasteFields
+	,"FROM public_toplevel_paste"
+	,"WHERE spamrating < ?"
+	,"ORDER BY id DESC"
+	,"LIMIT 20"]
+       (Only spamMinLevel)
 
 -- | Get some paginated pastes.
 getSomePastes :: Maybe String -> Pagination -> HPModel [Paste]
 getSomePastes mauthor Pagination{..} =
   query ["SELECT",pasteFields
 	,"FROM public_toplevel_paste"
-	,"WHERE (? IS NULL) OR (author = ?)"
+	,"WHERE (? IS NULL) OR (author = ?) AND spamrating < ?"
 	,"ORDER BY id DESC"
 	,"OFFSET " ++ show (max 0 (pnPage - 1) * pnLimit)
 	,"LIMIT " ++ show pnLimit]
-        (mauthor,mauthor)
+        (mauthor,mauthor,spamMinLevel)
 
 -- | Get a paste by its id.
 getPasteById :: PasteId -> HPModel (Maybe Paste)
@@ -131,7 +134,8 @@ createPaste langs chans ps@PasteSubmit{..} spamrating = do
   when (lang == Just "haskell") $ just res $ createHints ps
   just (pasteSubmitChannel >>= lookupChan) $ \chan ->
     just res $ \pid -> do
-      announcePaste pasteSubmitType (channelName chan) ps pid
+      unless (spamrating < spamMinLevel) $
+        announcePaste pasteSubmitType (channelName chan) ps pid
   return (pasteSubmitId <|> res)
 
   where lookupChan cid = find ((==cid).channelId) chans

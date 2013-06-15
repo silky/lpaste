@@ -96,7 +96,7 @@ pasteForm channels languages defChan annotatePaste editPaste = do
     Just PasteSubmit{pasteSubmitSpamTrap=Just{}} -> goHome
     Just paste -> do
       spamrating <- io $ spamRating paste
-      if spamrating >= 100
+      if spamrating >= spamMaxLevel
       	 then goHome
 	 else do
 	    resetCache Key.Home

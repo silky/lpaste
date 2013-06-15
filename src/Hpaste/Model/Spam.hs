@@ -34,8 +34,8 @@ getRating mail = do
 
 -- | Mark something as definitely spam.
 definitelySpam :: PasteSubmit -> Bool
-definitelySpam ps =
-  T.isInfixOf "stooorage" (allText ps)
+definitelySpam ps = False
+--  T.isInfixOf "stooorage" (allText ps)
 
 -- | Multiple the rating by weights specific to hpaste.
 weighted :: PasteSubmit -> Integer -> Integer
@@ -50,3 +50,6 @@ weighted ps n = foldr ($) n weights where
 -- | Get the text of the paste.
 allText :: PasteSubmit -> Text
 allText PasteSubmit{..} = T.toLower $ pasteSubmitTitle <> " " <> pasteSubmitPaste
+
+spamMaxLevel = 100
+spamMinLevel = 60
