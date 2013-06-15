@@ -8,3 +8,5 @@ amelie.conf
 irclogs
 cache/
 TAGS
+.hsenv/
+hpaste.conf

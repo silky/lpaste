@@ -2,7 +2,7 @@
 
 mkdir log -p
 echo 'Killing ...'
-killall amelie
+killall hpaste
 sleep 0.2
 echo 'Starting ...'
-dist/build/amelie/amelie amelie.conf & disown
+dist/build/hpaste/hpaste hpaste.conf & disown
