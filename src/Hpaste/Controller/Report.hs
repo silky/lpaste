@@ -34,8 +34,7 @@ import           Text.Formlet
 
 -- | Handle the report/delete page.
 handle :: HPCtrl ()
-handle =
-  withAuth $ \_ -> do
+handle = do
    pid <- (>>= readMay) . fmap (toString) <$> getParam "id"
    case pid of
      Nothing -> goHome
