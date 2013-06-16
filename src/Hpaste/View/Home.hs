@@ -13,7 +13,7 @@ import Hpaste.View.Html
 import Hpaste.View.Layout
 import Hpaste.View.Paste  (pasteLink)
 
-
+import Control.Monad
 import Data.Text          (Text)
 import Data.Time.Show     (showDateTime)
 import Prelude            hiding ((++))
@@ -24,17 +24,20 @@ import Network.URI.Params
 import Network.URI
 
 -- | Render the home page.
-page :: URI -> [Channel] -> [Language] -> [Paste] -> Html -> Html
-page uri chans langs ps form =
+page :: URI -> [Channel] -> [Language] -> [Paste] -> Html -> Bool -> Html
+page uri chans langs ps form spam =
   layoutPage $ Page {
     pageTitle = "Recent pastes"
-  , pageBody = content uri chans langs ps form
+  , pageBody = content uri chans langs ps form spam
   , pageName = "home"
   }
 
 -- | Render the home page body.
-content :: URI -> [Channel] -> [Language] -> [Paste] -> Html -> Html
-content uri chans langs ps form = do
+content :: URI -> [Channel] -> [Language] -> [Paste] -> Html -> Bool -> Html
+content uri chans langs ps form spam = do
+  when spam $ p $ strong $ do "Your submission was identified as being probably spam and was ignored. "
+                              "Try reducing links and making your paste look less spammy. "
+			      "If the problem persists, try contacting support and we will adjust the spam filters."
   createNew form
   latest uri chans langs ps
 

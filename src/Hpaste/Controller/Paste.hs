@@ -95,15 +95,19 @@ pasteForm channels languages defChan annotatePaste editPaste = do
     Nothing -> return ()
     Just PasteSubmit{pasteSubmitSpamTrap=Just{}} -> goHome
     Just paste -> do
-      spamrating <- io $ spamRating paste
+      spamrating <- model $ spamRating paste
       if spamrating >= spamMaxLevel
-      	 then goHome
+      	 then goSpamBlocked
 	 else do
 	    resetCache Key.Home
 	    maybe (return ()) (resetCache . Key.Paste . fromIntegral) $ pasteSubmitId paste
 	    pid <- model $ createPaste languages channels paste spamrating
 	    maybe (return ()) redirectToPaste pid
   return html
+
+-- | Go back to the home page with a spam indication.
+goSpamBlocked :: HPCtrl ()
+goSpamBlocked = redirect "/spam"
 
 -- | Redirect to the paste's page.
 redirectToPaste :: PasteId -> HPCtrl ()

@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards #-}
+	{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -9,20 +9,43 @@ module Hpaste.Model.Spam where
 import Hpaste.Types
 import Data.Monoid
 import Data.Text (Text)
+import Control.Monad.IO
+import Control.Monad.Env
+import Control.Monad
+import qualified Data.Text.Lazy as LT
 import qualified Data.Text as T
-import System.Process
+import System.Process hiding (env)
+import Snap.App
+import Network.Mail.Mime
 
 -- | Get a spam rating for the given potential paste.
-spamRating :: PasteSubmit -> IO Integer
+spamRating :: PasteSubmit -> Model Config s Integer
 spamRating ps = do
-  if definitelySpam ps
+  score <- if definitelySpam ps
      then return 100
-     else fmap (weighted ps) (getRating mail)
+     else fmap (weighted ps) (io (getRating mail))
+  when (score > spamMaxLevel) $ reportBadScore ps score
+  return score
 
   where mail = unlines ["from: noreply@hpaste.org"
                        ,"subject: " ++ T.unpack (pasteSubmitTitle ps)
 		       ,""
 		       ,T.unpack (pasteSubmitPaste ps)]
+
+reportBadScore PasteSubmit{..} score = do
+  conf <- env modelStateConfig
+  m <- io $ simpleMail (configAdmin conf)
+		       (configSiteAddy conf)
+		       ("Paste marked as spam: " <> pasteSubmitTitle)
+		       body
+		       body
+		       []
+  io $ renderSendMail m
+
+  where body = LT.pack $
+  	  "Paste '" ++ T.unpack pasteSubmitTitle ++ "' by " ++ T.unpack pasteSubmitAuthor ++ " " ++
+	  "has rating " ++ show score ++ " with content: " ++
+	  T.unpack pasteSubmitPaste
 
 -- | Get the rating from spam assassin.
 getRating :: String -> IO Integer
@@ -41,7 +64,7 @@ definitelySpam ps =
 weighted :: PasteSubmit -> Integer -> Integer
 weighted ps n = foldr ($) n weights where
   weights = [if T.isInfixOf "http://" text || T.isInfixOf "https://" text
-  	    	then (* (1 + fromIntegral (T.count "http://" text + T.count "https://" text))) else id
+  	    	then (*2) else id -- then (* (1 + fromIntegral (T.count "http://" text + T.count "https://" text))) else id
             ,if pasteSubmitAuthor ps == "Anonymous Coward" || pasteSubmitAuthor ps == "Anonymous"
 	    	then (*2) else id
             ]
