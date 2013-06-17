@@ -137,7 +137,7 @@ createPaste langs chans ps@PasteSubmit{..} spamrating = do
   when (lang == Just "haskell") $ just res $ createHints ps
   just (pasteSubmitChannel >>= lookupChan) $ \chan ->
     just res $ \pid -> do
-      unless (spamrating < spamMinLevel) $
+      when (spamrating < spamMinLevel) $
         announcePaste pasteSubmitType (channelName chan) ps pid
   return (pasteSubmitId <|> res)
 
