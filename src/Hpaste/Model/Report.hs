@@ -18,6 +18,7 @@ import           Control.Monad
 
 import           Control.Monad.Env
 import           Control.Monad.IO
+import           Data.Pagination
 import           Data.Maybe
 import           Data.Monoid.Operator ((++))
 import qualified Data.Text as T
@@ -32,8 +33,8 @@ getSomeReports Pagination{..} =
   queryNoParams ["SELECT created,paste,comments"
                 ,"FROM report"
                 ,"ORDER BY id DESC"
-                ,"OFFSET " ++ show (max 0 (pnPage - 1) * pnLimit)
-                ,"LIMIT " ++ show pnLimit]
+                ,"OFFSET " ++ show (max 0 (pnCurrentPage - 1) * pnPerPage)
+                ,"LIMIT " ++ show pnPerPage]
 
 -- | Count reports.
 countReports :: Model c s Integer

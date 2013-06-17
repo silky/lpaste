@@ -7,6 +7,7 @@ module Hpaste.Controller.Activity
   (handle)
   where
 
+import Hpaste.Types
 import Hpaste.Controller.Cache (cache)
 import Hpaste.Model.Activity   (getCommits)
 import Hpaste.Types.Cache      as Key

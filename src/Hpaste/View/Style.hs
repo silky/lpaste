@@ -290,6 +290,15 @@ home = do
 -- | Browse page styles.
 browse :: CSS Rule
 browse = do
+  rule ".pages-list" $ do
+    rule "li" $ do
+      display "inline"
+      marginRight "1em"
+    rule "a.active" $ do
+      fontWeight "bold"
+      color "#fff"
+      cursor "default"
+
   classRule "pagination" $ do
     textAlign "center"
     margin "1em"

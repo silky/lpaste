@@ -13,21 +13,23 @@ import           Hpaste.View.Html
 import           Hpaste.View.Layout
 import           Hpaste.View.Paste  (pasteLink)
 
-
+import Data.Pagination
 import           Control.Monad
 import           Data.Maybe
 import           Data.Monoid.Operator
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import           Data.Time.Show     (showDateTime)
+import           Network.URI
 import           Network.URI.Params
 import           Prelude            hiding ((++))
 import           Snap.App.Types
 import           Text.Blaze.Extra
+import           Text.Blaze.Pagination
 import           Text.Blaze.Html5   as H hiding (map)
 
 -- | Render the browse page.
-page :: Pagination -> [Channel] -> [Language] -> [Paste] -> Maybe String -> Html
+page :: PN -> [Channel] -> [Language] -> [Paste] -> Maybe String -> Html
 page pn chans langs ps mauthor =
   layoutPage $ Page {
     pageTitle = "Browse pastes"
@@ -36,14 +38,15 @@ page pn chans langs ps mauthor =
   }
 
 -- | View the paginated pastes.
-browse :: Pagination -> [Channel] -> [Language] -> [Paste] -> Maybe String -> Html
+browse :: PN -> [Channel] -> [Language] -> [Paste] -> Maybe String -> Html
 browse pn channels languages ps mauthor = do
   darkSection title $ do
-    paginate pn $ do
-      table ! aClass "latest-pastes" $ do
-        tr $ mapM_ (th . (toHtml :: String -> Html)) $
-	   ["Title"] ++ ["Author"|isNothing mauthor] ++ ["When","Language","Channel"]
-        pastes ps
+    pagination pn
+    table ! aClass "latest-pastes" $ do
+      tr $ mapM_ (th . (toHtml :: String -> Html)) $
+	 ["Title"] ++ ["Author"|isNothing mauthor] ++ ["When","Language","Channel"]
+      pastes ps
+    pagination pn { pnPn = (pnPn pn) { pnShowDesc = False } }
 
     where pastes = mapM_ $ \paste@Paste{..} -> tr $ do
                      td $ pasteLink paste pasteTitle

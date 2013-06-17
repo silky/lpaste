@@ -7,6 +7,7 @@ module Hpaste.Controller.New
   (handle,NewStyle(..))
   where
 
+import Hpaste.Types
 import Hpaste.Controller.Paste (pasteForm,getPasteId)
 import Hpaste.Model.Channel    (getChannels)
 import Hpaste.Model.Language   (getLanguages)

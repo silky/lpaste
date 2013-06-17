@@ -7,18 +7,16 @@ module Hpaste.Types.Channel
        where
 
 import Hpaste.Types.Newtypes
-
+import Control.Applicative
 import Data.Text                               (Text)
-import Database.PostgreSQL.Simple.QueryResults (QueryResults(..))
+import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.FromRow
 
 data Channel = Channel {
   channelId   :: ChannelId
  ,channelName :: Text
 } deriving Show
 
-instance QueryResults Channel where
-  convertResults field values = Channel {
-      channelId = cid
-    , channelName = name
-    }
-    where (cid,name) = convertResults field values
+instance FromRow Channel where
+  fromRow = Channel <$> field
+		    <*> field

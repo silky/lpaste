@@ -26,10 +26,11 @@ import           Control.Arrow               ((&&&))
 import           Control.Monad               (when)
 import           Data.Maybe                  (fromMaybe)
 import           Data.Monoid.Operator        ((++))
-
+import           Data.Pagination
 import           Data.Text.Lazy              (Text)
 import qualified Data.Text.Lazy              as T
 import           Network.URI.Params
+import           Network.URI
 import           Prelude                     hiding ((++))
 import           Text.Blaze.Html5            as H hiding (map,nav)
 import qualified Text.Blaze.Html5.Attributes as A
@@ -113,20 +114,20 @@ showChannel paste channels lid = do
           chan = (lid >>= (`lookup` langs))
 
 -- | Render results with pagination.
-paginate :: Pagination -> Html -> Html
-paginate pn inner = do
-  nav pn True
+paginate :: URI -> Pagination -> Html -> Html
+paginate uri pn inner = do
+  nav uri pn True
   inner
-  nav pn False
+  nav uri pn False
 
 -- | Show a pagination navigation, with results count, if requested.
-nav :: Pagination -> Bool -> Html
-nav pn@Pagination{..} showTotal = do
+nav :: URI -> Pagination -> Bool -> Html
+nav uri pn@Pagination{..} showTotal = do
   H.div ! aClass "pagination" $ do
     H.div ! aClass "inner" $ do
-      when (pnPage-1 > 0) $ navDirection pn (-1) "Previous"
+      when (pnCurrentPage-1 > 0) $ navDirection uri pn (-1) "Previous"
       toHtml (" " :: Text)
-      when (pnResults == pnLimit) $ navDirection pn 1 "Next"
+      when (pnTotal == pnPerPage) $ navDirection uri pn 1 "Next"
       when showTotal $ do
         br
         toHtml $ results
@@ -134,14 +135,14 @@ nav pn@Pagination{..} showTotal = do
     where results = unwords [show start ++ "—" ++ show end
                             ,"results of"
                             ,show pnTotal]
-          start = 1 + (pnPage - 1) * pnResults
-          end = pnPage * pnResults
+          start = 1 + (pnCurrentPage - 1) * pnTotal
+          end = pnCurrentPage * pnTotal
 
 -- | Link to change navigation page based on a direction.
-navDirection :: Pagination -> Integer -> Text -> Html
-navDirection Pagination{..} change caption = do
+navDirection :: URI -> Pagination -> Integer -> Text -> Html
+navDirection uri Pagination{..} change caption = do
   a ! hrefURI uri $ toHtml caption
 
   where uri = updateUrlParam "page"
-  	      		     (show (pnPage + change))
-			     pnURI
+  	      		     (show (pnCurrentPage + change))
+			     uri   

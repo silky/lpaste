@@ -7,9 +7,10 @@ module Hpaste.Types.Language
        where
 
 import Hpaste.Types.Newtypes
-
+import Control.Applicative
 import Data.Text                               (Text)
-import Database.PostgreSQL.Simple.QueryResults (QueryResults(..))
+import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.FromRow
 
 data Language = Language {
   languageId    :: LanguageId
@@ -17,10 +18,7 @@ data Language = Language {
  ,languageTitle :: Text
 } deriving Show
 
-instance QueryResults Language where
-  convertResults field values = Language {
-      languageName = name
-    , languageId = lid
-    , languageTitle = title
-    }
-    where (lid,name,title) = convertResults field values
+instance FromRow Language where
+  fromRow = Language <$> field
+  	    	     <*> field
+		     <*> field

@@ -12,14 +12,16 @@ import Hpaste.Types
 import Hpaste.View.Html
 import Hpaste.View.Layout
 
+import Text.Blaze.Pagination
 import Data.Monoid.Operator ((++))
 import Data.Time.Show       (showDateTime)
 import Prelude              hiding ((++))
+import Network.URI
 import Text.Blaze.Html5     as H hiding (map)
 import Snap.App.Types
 
 -- | Render the reported page.
-page :: Pagination -> [Report] -> String -> Html
+page :: PN -> [Report] -> String -> Html
 page pn rs key =
   layoutPage $ Page {
     pageTitle = "Reported pastes"
@@ -28,13 +30,14 @@ page pn rs key =
   }
 
 -- | View the paginated reports.
-reported :: Pagination -> [Report] -> String -> Html
+reported :: PN -> [Report] -> String -> Html
 reported pn rs key = do
   darkSection "Reported pastes" $ do
-    paginate pn $ do
-      table ! aClass "latest-pastes" $ do
-        tr $ mapM_ (th . toHtml) $ words "Date Paste Delete Comments"
-        reports rs
+    pagination pn
+    table ! aClass "latest-pastes" $ do
+      tr $ mapM_ (th . toHtml) $ words "Date Paste Delete Comments"
+      reports rs
+    pagination pn
 
     where reports = mapM_ $ \Report{..} -> tr $ do
                       td $ toHtml $ showDateTime reportDate

@@ -21,16 +21,17 @@ module Hpaste.Types.Paste
 import Hpaste.Types.Newtypes
 import Hpaste.Types.Language
 import Hpaste.Types.Channel
-
+import Control.Applicative
 import Blaze.ByteString.Builder                (toByteString)
 import Blaze.ByteString.Builder.Char.Utf8      as Utf8 (fromString)
 import Data.Text                               (Text,pack)
 import Data.Time                               (UTCTime,zonedTimeToUTC)
-import Database.PostgreSQL.Simple.Param        (Param(..),Action(..))
-import Database.PostgreSQL.Simple.QueryResults (QueryResults(..))
-import Database.PostgreSQL.Simple.Result       (Result(..))
+import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.FromRow
+import Database.PostgreSQL.Simple.FromField
+import Database.PostgreSQL.Simple.ToField
 import Language.Haskell.HLint                  (Severity)
-import Snap.Core                               (Params)
+import Snap.Core                               
 import Text.Blaze                              (ToHtml(..),toHtml)
 import Text.Blaze.Html5                        (Html)
 
@@ -46,6 +47,28 @@ data Paste = Paste {
   ,pasteViews    :: Integer
   ,pasteType     :: PasteType
 } deriving Show
+
+instance ToHtml Paste where
+  toHtml paste@Paste{..} = toHtml $ pack $ show paste
+
+instance FromRow Paste where
+  fromRow = do
+    (pid,title,content,author,date,views,language,channel,annotation_of,revision_of) <- fromRow
+    return $ Paste 
+      { pasteTitle = title
+      , pasteAuthor = author
+      , pasteLanguage = language
+      , pasteChannel = channel
+      , pastePaste = content
+      , pasteDate = zonedTimeToUTC date
+      , pasteId = pid
+      , pasteViews = views
+      , pasteType = case annotation_of of
+	Just pid' -> AnnotationOf pid'
+	_ -> case revision_of of
+	  Just pid' -> RevisionOf pid'
+	  _ -> NormalPaste
+      }
 
 -- | The type of a paste.
 data PasteType
@@ -65,28 +88,6 @@ data PasteSubmit = PasteSubmit {
   ,pasteSubmitPaste    :: Text
   ,pasteSubmitSpamTrap :: Maybe Text
 } deriving Show
-
-instance ToHtml Paste where
-  toHtml paste@Paste{..} = toHtml $ pack $ show paste
-
-instance QueryResults Paste where
-  convertResults field values = Paste {
-      pasteTitle = title
-    , pasteAuthor = author
-    , pasteLanguage = language
-    , pasteChannel = channel
-    , pastePaste = content
-    , pasteDate = zonedTimeToUTC date
-    , pasteId = pid
-    , pasteViews = views
-    , pasteType = case annotation_of of
-      Just pid' -> AnnotationOf pid'
-      _ -> case revision_of of
-        Just pid' -> RevisionOf pid'
-	_ -> NormalPaste
-    }
-    where (pid,title,content,author,date,views,language,channel,annotation_of,revision_of) =
-            convertResults field values
 
 data PasteFormlet = PasteFormlet {
    pfSubmitted :: Bool
@@ -128,13 +129,15 @@ data StepsPage = StepsPage {
   , spForm :: Html
 }
 
-instance Param Severity where
-  render = Escape . toByteString . Utf8.fromString . show
-  {-# INLINE render #-}
+instance ToField Severity where
+  toField = toField . show
+ 
+--  render = Escape . toByteString . Utf8.fromString . show
+--  {-# INLINE render #-}
 
-instance Result Severity where
-  convert f = read . convert f
-  {-# INLINE convert #-}
+instance FromField Severity where
+  fromField x y = fmap read (fromField x y)
+  {-# INLINE fromField #-}
 
 -- | A hlint (or like) suggestion.
 data Hint = Hint {
@@ -142,12 +145,15 @@ data Hint = Hint {
  , hintContent :: String
 }
 
-instance QueryResults Hint where
-  convertResults field values = Hint {
-      hintType = severity
-    , hintContent = content
-    }
-    where (severity,content) = convertResults field values
+instance FromRow Hint where
+  fromRow = Hint <$> field <*> field
+
+-- instance QueryResults Hint where
+--   convertResults field values = Hint {
+--       hintType = severity
+--     , hintContent = content
+--     }
+--     where (severity,content) = convertResults field values
 
 data ReportFormlet = ReportFormlet {
    rfSubmitted :: Bool

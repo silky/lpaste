@@ -2,9 +2,11 @@ module Hpaste.Types.Report where
 
 import Hpaste.Types.Newtypes                   (PasteId)
 
+import Control.Applicative
 import Data.Text                               (Text)
 import Data.Time                               (UTCTime,zonedTimeToUTC)
-import Database.PostgreSQL.Simple.QueryResults (QueryResults(..))
+import Database.PostgreSQL.Simple
+import Database.PostgreSQL.Simple.FromRow
 
 data Report = Report {
   reportDate :: UTCTime
@@ -12,10 +14,7 @@ data Report = Report {
  ,reportComments :: Text
 } deriving Show
 
-instance QueryResults Report where
-  convertResults field values = Report {
-      reportDate = zonedTimeToUTC date
-    , reportPasteId = paste
-    , reportComments = comments
-    }
-    where (date,paste,comments) = convertResults field values
+instance FromRow Report where
+  fromRow = Report <$> fmap zonedTimeToUTC field
+  	    	   <*> field
+		   <*> field

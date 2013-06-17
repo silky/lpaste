@@ -8,6 +8,7 @@ module Hpaste.Controller.Diff
   (handle)
   where
 
+import Hpaste.Types
 import Hpaste.Controller.Paste (withPasteKey)
 import Hpaste.View.Diff        (page)
 

@@ -20,15 +20,13 @@ import Hpaste.Controller.Script   as Script
 import Hpaste.Model.Announcer     (newAnnouncer)
 import Hpaste.Types
 
-import Snap.App (Snap,runHandler,route)
+import Control.Concurrent.Chan    (Chan)
+import Data.Text.Lazy             (Text)
+import System.Environment
+import Snap.App
 import Snap.Http.Server           hiding (Config)
 import Snap.Util.FileServe
 
-import Control.Concurrent.Chan    (Chan)
-import Data.Text.Lazy             (Text)
-import Database.PostgreSQL.Base   (newPool)
-import Database.PostgreSQL.Simple (Pool)
-import System.Environment
 
 -- | Main entry point.
 main :: IO ()
@@ -43,7 +41,7 @@ main = do
 
 -- | Serve the controllers.
 serve :: Config -> Pool -> Chan Text -> Snap ()
-serve conf p ans = route routes where
+serve config pool ans = route routes where
   routes = [("/css/amelie.css", run Style.handle)
            ,("/css/",serveDirectory "static/css")
            ,("/js/amelie.js",run Script.handle)
@@ -65,4 +63,4 @@ serve conf p ans = route routes where
            ,("/diff/:this/:that",run Diff.handle)
 	   ,("/delete",run Report.handleDelete)
            ]
-  run = runHandler ans conf p
+  run = runHandler ans config pool

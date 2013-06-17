@@ -7,22 +7,21 @@ module Hpaste.Controller.Browse
   (handle)
   where
 
+import Hpaste.Types
 import Hpaste.Model.Channel  (getChannels)
 import Hpaste.Model.Language (getLanguages)
-import Hpaste.Model.Paste    (getSomePastes,countPublicPastes)
+import Hpaste.Model.Paste    (getPaginatedPastes,countPublicPastes)
 import Hpaste.View.Browse    (page)
 
+import Text.Blaze.Pagination
 import Snap.App
 
 -- | Browse all pastes.
 handle :: HPCtrl ()
 handle = do
-  pn <- getPagination
+  pn <- getPagination "pastes"
   author <- getStringMaybe "author"
-  total <- model $ countPublicPastes author
-  pastes <- model $ getSomePastes author pn
-  let pn' = pn { pnResults = fromIntegral (length pastes)
-               , pnTotal = total }
+  (pn',pastes) <- model $ getPaginatedPastes author (pnPn pn)
   chans <- model getChannels
   langs <- model getLanguages
-  output $ page pn' chans langs pastes author
+  output $ page pn { pnPn = pn' } chans langs pastes author

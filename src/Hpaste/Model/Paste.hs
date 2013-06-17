@@ -16,7 +16,7 @@ module Hpaste.Model.Paste
   ,createPaste
   ,getAnnotations
   ,getRevisions
-  ,getSomePastes
+  ,getPaginatedPastes
   ,countPublicPastes
   ,generateHints
   ,getHints
@@ -27,6 +27,7 @@ import Hpaste.Types
 import Hpaste.Model.Announcer
 import Hpaste.Model.Spam
 
+import Data.Pagination
 import Control.Applicative    ((<$>),(<|>))
 import Control.Exception as E
 import Control.Monad
@@ -69,15 +70,17 @@ getLatestPastes =
        (Only spamMinLevel)
 
 -- | Get some paginated pastes.
-getSomePastes :: Maybe String -> Pagination -> HPModel [Paste]
-getSomePastes mauthor Pagination{..} =
-  query ["SELECT",pasteFields
-	,"FROM public_toplevel_paste"
-	,"WHERE (? IS NULL) OR (author = ?) AND spamrating < ?"
-	,"ORDER BY id DESC"
-	,"OFFSET " ++ show (max 0 (pnPage - 1) * pnLimit)
-	,"LIMIT " ++ show pnLimit]
-        (mauthor,mauthor,spamMinLevel)
+getPaginatedPastes :: Maybe String -> Pagination -> HPModel (Pagination,[Paste])
+getPaginatedPastes mauthor pn@Pagination{..} = do
+  total <- countPublicPastes mauthor
+  rows <- query ["SELECT",pasteFields
+		,"FROM public_toplevel_paste"
+		,"WHERE (? IS NULL) OR (author = ?) AND spamrating < ?"
+		,"ORDER BY id DESC"
+		,"OFFSET " ++ show (max 0 (pnCurrentPage - 1) * pnPerPage)
+		,"LIMIT " ++ show pnPerPage]
+		(mauthor,mauthor,spamMinLevel)
+  return (pn { pnTotal = total },rows)
 
 -- | Get a paste by its id.
 getPasteById :: PasteId -> HPModel (Maybe Paste)

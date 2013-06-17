@@ -7,6 +7,7 @@ module Hpaste.Controller.Home
   (handle)
   where
 
+import Hpaste.Types
 import Hpaste.Controller.Cache (cacheIf)
 import Hpaste.Controller.Paste (pasteForm)
 import Hpaste.Model.Channel    (getChannels)
