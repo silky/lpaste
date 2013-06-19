@@ -58,7 +58,17 @@ getRating mail = do
 -- | Mark something as definitely spam.
 definitelySpam :: PasteSubmit -> Bool
 definitelySpam ps =
-  T.isInfixOf "stooorage" (allText ps)
+  T.isInfixOf "stooorage" (allText ps) ||
+  T.isInfixOf "http://fur.ly" (allText ps) ||
+  justUrl 
+   where justUrl = 
+   	   (T.isPrefixOf "http://" paste ||
+   	    T.isPrefixOf "https://" paste) &&
+	    lineCount == 1
+	 lineCount = length (filter (not . T.null) 
+                                    (map T.strip
+                                         (T.lines paste)))
+         paste = T.strip (pasteSubmitPaste ps)
 
 -- | Multiple the rating by weights specific to hpaste.
 weighted :: PasteSubmit -> Integer -> Integer
