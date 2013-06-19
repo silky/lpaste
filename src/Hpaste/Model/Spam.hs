@@ -1,4 +1,4 @@
-	{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -64,9 +64,9 @@ definitelySpam ps =
 weighted :: PasteSubmit -> Integer -> Integer
 weighted ps n = foldr ($) n weights where
   weights = [if T.isInfixOf "http://" text || T.isInfixOf "https://" text
-  	    	then (*2) else id -- then (* (1 + fromIntegral (T.count "http://" text + T.count "https://" text))) else id
+  	    	then (+ (20 * fromIntegral (T.count "http://" text + T.count "https://" text))) else id
             ,if pasteSubmitAuthor ps == "Anonymous Coward" || pasteSubmitAuthor ps == "Anonymous"
-	    	then (*2) else id
+	    	then (+20) else id
             ]
   text = allText ps
 
