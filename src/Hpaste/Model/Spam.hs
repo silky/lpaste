@@ -60,6 +60,7 @@ definitelySpam :: PasteSubmit -> Bool
 definitelySpam ps =
   T.isInfixOf "stooorage" (allText ps) ||
   T.isInfixOf "http://fur.ly" (allText ps) ||
+  T.isInfixOf "anekahosting.com" (allText ps) ||
   justUrl 
    where justUrl = 
    	   (T.isPrefixOf "http://" paste ||
