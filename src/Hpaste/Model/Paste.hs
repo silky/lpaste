@@ -166,8 +166,9 @@ announcePaste :: PasteType -> Text -> PasteSubmit -> PasteId -> HPModel ()
 announcePaste ptype channel PasteSubmit{..} pid = do
   conf <- env modelStateConfig
   verb <- getVerb
-  unless (seemsLikeSpam pasteSubmitTitle || seemsLikeSpam pasteSubmitAuthor) $
-    announce (fromStrict channel) $ fromStrict $ do
+  unless (seemsLikeSpam pasteSubmitTitle || seemsLikeSpam pasteSubmitAuthor) $ do
+    announcer <- env modelStateAnns
+    io $ announce announcer pasteSubmitAuthor channel $ do
       nick ++ " " ++ verb ++ " “" ++ pasteSubmitTitle ++ "” at " ++ link conf
   where nick | validNick (unpack pasteSubmitAuthor) = pasteSubmitAuthor
              | otherwise = "“" ++ pasteSubmitAuthor ++ "”"

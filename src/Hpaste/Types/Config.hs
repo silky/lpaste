@@ -2,16 +2,18 @@
 
 module Hpaste.Types.Config
        (Config(..)
-       ,Announcer(..))
+       ,AnnounceConfig(..))
        where
 
 import Database.PostgreSQL.Simple (ConnectInfo)
 import Network.Mail.Mime (Address)
 import Snap.App.Types
 
+import Hpaste.Types.Announcer
+
 -- | Site-wide configuration.
 data Config = Config {
-    configAnnounce        :: Announcer
+    configAnnounce        :: AnnounceConfig
   , configPostgres        :: ConnectInfo
   , configDomain          :: String
   , configCommits         :: String
@@ -26,10 +28,3 @@ data Config = Config {
 instance AppConfig Config where
   getConfigDomain = configDomain
 
--- | Announcer configuration.
-data Announcer = Announcer {
-    announceUser :: String
-  , announcePass :: String
-  , announceHost :: String
-  , announcePort :: Int
-} deriving (Show)

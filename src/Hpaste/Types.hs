@@ -29,6 +29,7 @@ import Hpaste.Types.Config
 import Hpaste.Types.Activity
 import Hpaste.Types.Stepeval
 import Hpaste.Types.Report
+import Hpaste.Types.Announcer (Announcer)
 
 import Control.Concurrent (Chan)
 import Control.Monad.Env
@@ -37,7 +38,7 @@ import Control.Monad.Reader
 import Data.Text.Lazy (Text)
 import Snap.App.Types
 
-type HPState = Chan Text
+type HPState = Announcer
 type HPCtrl = Controller Config HPState
 type HPModel = Model Config HPState
 

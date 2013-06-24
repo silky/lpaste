@@ -19,6 +19,7 @@ import Hpaste.Controller.Style    as Style
 import Hpaste.Controller.Script   as Script
 import Hpaste.Model.Announcer     (newAnnouncer)
 import Hpaste.Types
+import Hpaste.Types.Announcer
 
 import Control.Concurrent.Chan    (Chan)
 import Data.Text.Lazy             (Text)
@@ -40,7 +41,7 @@ main = do
  where server = setPort 10000 defaultConfig
 
 -- | Serve the controllers.
-serve :: Config -> Pool -> Chan Text -> Snap ()
+serve :: Config -> Pool -> Announcer -> Snap ()
 serve config pool ans = route routes where
   routes = [("/css/amelie.css", run Style.handle)
            ,("/css/",serveDirectory "static/css")

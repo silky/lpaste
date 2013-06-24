@@ -58,6 +58,8 @@ getRating mail = do
 -- | Mark something as definitely spam.
 definitelySpam :: PasteSubmit -> Bool
 definitelySpam ps =
+  T.isInfixOf "http://" (pasteSubmitTitle ps) ||
+  T.isInfixOf "http://" (pasteSubmitAuthor ps) ||
   T.isInfixOf "stooorage" (allText ps) ||
   T.isInfixOf "http://fur.ly" (allText ps) ||
   T.isInfixOf "anekahosting.com" (allText ps) ||

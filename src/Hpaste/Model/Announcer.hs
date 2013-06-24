@@ -7,51 +7,66 @@
 
 module Hpaste.Model.Announcer
        (newAnnouncer
-       ,announce)
+       ,announce
+       )
        where
 
-import           Hpaste.Types
-
+import           Hpaste.Types.Announcer
+import		 Control.Monad.Fix
 import           Control.Concurrent
 import qualified Control.Exception       as E
 import           Control.Monad
 import           Control.Monad.Env       (env)
 import           Control.Monad.IO        (io)
-import qualified Data.ByteString.Lazy    as B
+import qualified Data.ByteString    as B
 import           Data.Monoid.Operator    ((++))
-import           Data.Text.Lazy          (Text,pack)
-import           Data.Text.Lazy.Encoding
-import qualified Data.Text.Lazy.IO       as T
+import 		 Data.Char
+import           Data.Text          (Text,pack)
+import qualified Data.Text          as T
+import           Data.Text.Encoding
+import qualified Data.Text.IO       as T
 import           Network
 import           Prelude                 hiding ((++))
 import           Snap.App.Types
 import           System.IO
 
 -- | Start a thread and return a channel to it.
-newAnnouncer :: Announcer -> IO (Chan Text)
+newAnnouncer :: AnnounceConfig -> IO Announcer
 newAnnouncer config = do
   putStrLn "Connecting..."
   ans <- newChan
-  _ <- forkIO $ announcer config ans (\_ -> return ())
-  return ans
+  let self = Announcer { annChan = ans, annConfig = config }
+  _ <- forkIO $ announcer self (const (return ()))
+  return self
 
 -- | Run the announcer bot.
-announcer :: Announcer -> Chan Text -> (Handle -> IO ()) -> IO ()
-announcer c@Announcer{..} ans cont = do
+announcer ::  Announcer -> (Handle -> IO ()) -> IO ()
+announcer self@Announcer{annConfig=c@AnnounceConfig{..},annChan=ans} cont = do
   h <- connectTo announceHost (PortNumber $ fromIntegral announcePort)
   hSetBuffering h NoBuffering
-  let send h line = E.catch (do B.hPutStr h (encodeUtf8 (line ++ "\n"))
-                                T.putStrLn line)
-                            (\(_ :: IOError) -> do announcer c ans $ \h -> send h line)
-  send h $ "PASS " ++ pack announcePass
-  send h $ "USER " ++ pack announceUser ++ " * * *"
-  send h $ "NICK " ++ pack announceUser
+  let write h line retry =
+        E.catch (do B.hPutStr h (encodeUtf8 (line ++ "\n"))
+                    T.putStrLn line)
+                (\(e :: IOError) -> do forkIO (announcer self (if retry
+                                                                  then (\h -> write h line retry)
+                                                                  else const (return ())))
+                                       E.throw e)
+      send l = write h l False
+  send $ "PASS " ++ pack announcePass
+  send $ "USER " ++ pack announceUser ++ " * * *"
+  send $ "NICK " ++ pack announceUser
   cont h
   lines <- getChanContents ans
-  forM_ lines $ \line -> send h line
+  forM_ lines $ \(Announcement origin line) -> do
+    send $ "WHOIS :" ++ origin
+    fix $ \loop -> do
+      incoming <- T.hGetLine h
+      case T.takeWhile isDigit (T.drop 1 (T.dropWhile (/=' ') incoming)) of
+        "311" -> do write h line True
+	"401" -> return ()
+	_ -> loop
 
 -- | Announce something to the IRC.
-announce :: Text -> Text -> Model c HPState ()
-announce channel line = do
-  chan <- env modelStateAnns
-  io $ writeChan chan $ "PRIVMSG " ++ channel ++ " :" ++ line
+announce :: Announcer -> Text -> Text -> Text -> IO ()
+announce Announcer{annChan=chan} nick channel line = do
+  io $ writeChan chan $ Announcement nick ("PRIVMSG " ++ channel ++ " :" ++ line)
