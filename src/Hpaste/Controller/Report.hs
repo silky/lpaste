@@ -39,11 +39,11 @@ handle = do
    case pid of
      Nothing -> goHome
      Just (pid :: Integer) -> do
-       paste <- model $ getPasteById (fromIntegral pid)
+       paste <- model $ getPasteById (PasteId pid)
        (frm,val) <- exprForm
        case val of
 	 Just comment -> do
-	   _ <- model $ createReport ReportSubmit { rsPaste = fromIntegral pid
+	   _ <- model $ createReport ReportSubmit { rsPaste = PasteId pid
 						  , rsComments = comment }
 	   resetCache Key.Home
 	   output $ Thanks.page "Reported" $
@@ -75,7 +75,7 @@ handleDelete =
       Just (pid :: Integer) -> do
 	model $ deletePaste pid
 	goReport
-    
+
 -- | Go back to the reported page.
 goReport :: HPCtrl ()
 goReport = withAuth $ \key -> redirect (fromString ("/reported?key=" ++ key))

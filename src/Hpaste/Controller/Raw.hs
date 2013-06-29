@@ -27,5 +27,5 @@ handle = do
     Nothing -> goHome
     Just (pid :: Integer) -> do
       modifyResponse $ setContentType "text/plain; charset=UTF-8"
-      paste <- model $ getPasteById (fromIntegral pid)
+      paste <- model $ getPasteById (PasteId pid)
       maybe goHome (outputText . fromStrict . pastePaste) paste

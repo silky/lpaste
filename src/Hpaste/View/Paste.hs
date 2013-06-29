@@ -66,7 +66,8 @@ pasteFormlet pf@PasteFormlet{..} =
             H.div ! aClass "errors" $
               mapM_ (p . toHtml) pfErrors
         formletHtml (pasteSubmit pf) pfParams
-        submitInput "submit" "Submit"
+        p $ do submitI "private" "Create Secret Paste"
+               submitI "public" "Create Public Paste"
   in (pasteSubmit pf,form)
 
   where action = case pfAnnotatePaste of
@@ -78,6 +79,15 @@ pasteFormlet pf@PasteFormlet{..} =
                      case pfEditPaste of
 		       Just Paste{..} -> "/edit/" ++ show pasteId
 		       Nothing -> "/new"
+
+
+-- | Make a submit (captioned) button.
+submitI :: Text -> Text -> Html
+submitI name caption =
+  H.input ! A.type_ "submit"
+          ! A.name (toValue name)
+          ! A.value (toValue caption)
+
 
 -- | The paste submitting formlet itself.
 pasteSubmit :: PasteFormlet -> Formlet PasteSubmit
@@ -130,7 +140,7 @@ getPasteId :: PasteFormlet -> Maybe PasteId
 getPasteId PasteFormlet{..} =
   M.lookup "id" pfParams >>=
   readMay . concat . map toString >>=
-  return . (fromIntegral :: Integer -> PasteId)
+  return . PasteId
 
 -- | View the paste's annotations.
 viewAnnotations :: [Paste] -> [Channel] -> [Language] -> [(Paste,[Hint])] -> Html

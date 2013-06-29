@@ -40,18 +40,18 @@ import Text.Formlet
 handle :: Bool -> HPCtrl ()
 handle revision = do
   pid <- getPasteId
-  justOrGoHome pid $ \(pid :: Integer) -> do
+  justOrGoHome pid $ \(pid) -> do
       html <- cache (if revision then Key.Revision pid else Key.Paste pid) $ do
         getPrivate <- getParam "show_private"
         paste <- model $ if isJust getPrivate
-	      	       	    then getPrivatePasteById (fromIntegral pid) 
-	      	       	    else getPasteById (fromIntegral pid)
+	      	       	    then getPrivatePasteById (pid)
+	      	       	    else getPasteById (pid)
         case paste of
           Nothing -> return Nothing
           Just paste -> do
             hints <- model $ getHints (pasteId paste)
-            annotations <- model $ getAnnotations (fromIntegral pid)
-            revisions <- model $ getRevisions (fromIntegral pid)
+            annotations <- model $ getAnnotations (pid)
+            revisions <- model $ getRevisions (pid)
             ahints <- model $ mapM (getHints.pasteId) annotations
             rhints <- model $ mapM (getHints.pasteId) revisions
             chans <- model $ getChannels
@@ -73,10 +73,11 @@ handle revision = do
 pasteForm :: [Channel] -> [Language] -> Maybe Text -> Maybe Paste -> Maybe Paste -> HPCtrl Html
 pasteForm channels languages defChan annotatePaste editPaste = do
   params <- getParams
-  submitted <- isJust <$> getParam "submit"
+  submittedPrivate <- isJust <$> getParam "private"
+  submittedPublic <- isJust <$> getParam "public"
   revisions <- maybe (return []) (model . getRevisions) (fmap pasteId (annotatePaste <|> editPaste))
   let formlet = PasteFormlet {
-          pfSubmitted = submitted
+          pfSubmitted = submittedPrivate || submittedPublic
         , pfErrors    = []
         , pfParams    = params
         , pfChannels  = channels
@@ -100,8 +101,8 @@ pasteForm channels languages defChan annotatePaste editPaste = do
       	 then goSpamBlocked
 	 else do
 	    resetCache Key.Home
-	    maybe (return ()) (resetCache . Key.Paste . fromIntegral) $ pasteSubmitId paste
-	    pid <- model $ createPaste languages channels paste spamrating
+	    maybe (return ()) (resetCache . Key.Paste) $ pasteSubmitId paste
+	    pid <- model $ createPaste languages channels paste spamrating submittedPublic
 	    maybe (return ()) redirectToPaste pid
   return html
 
@@ -115,19 +116,19 @@ redirectToPaste (PasteId pid) =
   redirect $ "/" ++ fromString (show pid)
 
 -- | Get the paste id.
-getPasteId :: HPCtrl (Maybe Integer)
-getPasteId = (fmap toString >=> readMay) <$> getParam "id"
+getPasteId :: HPCtrl (Maybe PasteId)
+getPasteId = (fmap toString >=> (fmap PasteId . readMay)) <$> getParam "id"
 
 -- | Get the paste id by a key.
-getPasteIdKey :: ByteString -> HPCtrl (Maybe Integer)
-getPasteIdKey key = (fmap toString >=> readMay) <$> getParam key
+getPasteIdKey :: ByteString -> HPCtrl (Maybe PasteId)
+getPasteIdKey key = (fmap toString >=> (fmap PasteId . readMay)) <$> getParam key
 
 -- | With the
 withPasteKey :: ByteString -> (Paste -> HPCtrl a) -> HPCtrl ()
 withPasteKey key with = do
   pid <- getPasteIdKey key
-  justOrGoHome pid $ \(pid :: Integer) -> do
-    paste <- model $ getPasteById (fromIntegral pid)
+  justOrGoHome pid $ \(pid ) -> do
+    paste <- model $ getPasteById pid
     justOrGoHome paste $ \paste -> do
       _ <- with paste
       return ()

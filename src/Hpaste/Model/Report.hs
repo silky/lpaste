@@ -57,8 +57,8 @@ createReport rs@ReportSubmit{..} = do
 	    ,"WHERE id = ?"]
 	    (Only rsPaste)
   let reset pid = do
-        resetCacheModel (Key.Paste (fromIntegral pid))
-        resetCacheModel (Key.Revision (fromIntegral pid))
+        resetCacheModel (Key.Paste pid)
+        resetCacheModel (Key.Revision pid)
   reset rsPaste
   sendReport rs
   return res

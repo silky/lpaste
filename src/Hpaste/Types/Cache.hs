@@ -10,11 +10,12 @@ module Hpaste.Types.Cache
 import Control.Concurrent.MVar (MVar)
 import Data.Map                (Map)
 import Data.Text.Lazy          (Text)
+import Hpaste.Types.Newtypes
 
 data Key =
     Home
-  | Paste Integer
-  | Revision Integer
+  | Paste PasteId
+  | Revision PasteId
   | Activity
     deriving (Eq,Ord)
 

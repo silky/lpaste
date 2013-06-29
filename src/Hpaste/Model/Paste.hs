@@ -35,7 +35,7 @@ import Control.Monad.Env
 import Control.Monad.IO
 import Data.Char
 import Data.List              (find,intercalate)
-import Data.Maybe             (fromMaybe,listToMaybe)
+import Data.Maybe
 import Data.Monoid.Operator   ((++))
 import Data.Text              (Text,unpack,pack)
 import qualified Data.Text              as T
@@ -46,6 +46,7 @@ import Prelude                hiding ((++))
 import Snap.App
 import System.Directory
 import System.FilePath
+import Data.Digest.Pure.MD5
 
 deletePaste :: Integer -> HPModel ()
 deletePaste pid = void (exec ["DELETE FROM paste WHERE id = ?"] (Only pid))
@@ -65,7 +66,7 @@ getLatestPastes =
   query ["SELECT ",pasteFields
 	,"FROM public_toplevel_paste"
 	,"WHERE spamrating < ?"
-	,"ORDER BY id DESC"
+	,"ORDER BY created DESC"
 	,"LIMIT 20"]
        (Only spamMinLevel)
 
@@ -76,7 +77,7 @@ getPaginatedPastes mauthor pn@Pagination{..} = do
   rows <- query ["SELECT",pasteFields
 		,"FROM public_toplevel_paste"
 		,"WHERE (? IS NULL) OR (author = ?) AND spamrating < ?"
-		,"ORDER BY id DESC"
+		,"ORDER BY created DESC"
 		,"OFFSET " ++ show (max 0 (pnCurrentPage - 1) * pnPerPage)
 		,"LIMIT " ++ show pnPerPage]
 		(mauthor,mauthor,spamMinLevel)
@@ -104,7 +105,7 @@ getAnnotations pid =
   query ["SELECT",pasteFields
         ,"FROM public_paste"
         ,"WHERE annotation_of = ?"
-        ,"ORDER BY id ASC"]
+        ,"ORDER BY created ASC"]
         (Only pid)
 
 -- | Get revisions of a paste.
@@ -113,27 +114,28 @@ getRevisions pid = do
   query ["SELECT",pasteFields
         ,"FROM public_paste"
         ,"WHERE revision_of = ? or id = ?"
-        ,"ORDER BY id DESC"]
+        ,"ORDER BY created DESC"]
         (pid,pid)
 
 -- | Create a paste, or update an existing one.
-createOrUpdate :: [Language] -> [Channel] -> PasteSubmit -> Integer -> HPModel (Maybe PasteId)
-createOrUpdate langs chans paste@PasteSubmit{..} spamrating = do
+createOrUpdate :: [Language] -> [Channel] -> PasteSubmit -> Integer -> Bool -> HPModel (Maybe PasteId)
+createOrUpdate langs chans paste@PasteSubmit{..} spamrating public = do
   case pasteSubmitId of
-    Nothing  -> createPaste langs chans paste spamrating
+    Nothing  -> createPaste langs chans paste spamrating public
     Just pid -> do updatePaste pid paste
                    return $ Just pid
 
 -- | Create a new paste (possibly annotating an existing one).
-createPaste :: [Language] -> [Channel] -> PasteSubmit -> Integer -> HPModel (Maybe PasteId)
-createPaste langs chans ps@PasteSubmit{..} spamrating = do
+createPaste :: [Language] -> [Channel] -> PasteSubmit -> Integer -> Bool -> HPModel (Maybe PasteId)
+createPaste langs chans ps@PasteSubmit{..} spamrating public = do
+  pid <- generatePasteId
   res <- single ["INSERT INTO paste"
-                ,"(title,author,content,channel,language,annotation_of,revision_of,spamrating)"
+                ,"(id,title,author,content,channel,language,annotation_of,revision_of,spamrating,public)"
                 ,"VALUES"
-                ,"(?,?,?,?,?,?,?,?)"
+                ,"(?,?,?,?,?,?,?,?,?,?)"
                 ,"returning id"]
-                (pasteSubmitTitle,pasteSubmitAuthor,pasteSubmitPaste
-                ,pasteSubmitChannel,pasteSubmitLanguage,ann_pid,rev_pid,spamrating)
+                (pid,pasteSubmitTitle,pasteSubmitAuthor,pasteSubmitPaste
+                ,pasteSubmitChannel,pasteSubmitLanguage,ann_pid,rev_pid,spamrating,public)
   when (lang == Just "haskell") $ just res $ createHints ps
   just (pasteSubmitChannel >>= lookupChan) $ \chan ->
     just res $ \pid -> do
@@ -147,6 +149,17 @@ createPaste langs chans ps@PasteSubmit{..} spamrating = do
         just j m = maybe (return ()) m j
         ann_pid = case pasteSubmitType of AnnotationOf pid -> Just pid; _ -> Nothing
         rev_pid = case pasteSubmitType of RevisionOf pid -> Just pid; _ -> Nothing
+
+-- | Generate a fresh unique paste id.
+generatePasteId :: HPModel PasteId
+generatePasteId = do
+  result <- single ["SELECT (RANDOM()*9223372036854775807) :: BIGINT"] ()
+  case result of
+    Just pid@(PasteId i) -> do
+      result <- single ["SELECT TRUE FROM paste WHERE id = ?"] (Only pid)
+      case result :: Maybe PasteId of
+        Just pid -> generatePasteId
+        _        -> return pid
 
 -- | Create the hints for a paste.
 createHints :: PasteSubmit -> PasteId -> HPModel ()
@@ -189,7 +202,7 @@ announcePaste ptype channel PasteSubmit{..} pid = do
 	    return $ case paste of
 	      Just Paste{..} -> "revised “" ++ pasteTitle ++ "”:"
               Nothing -> "revised a paste:"
-        showPid p = pack $ show $ (fromIntegral p :: Integer)
+        showPid (PasteId p) = pack $ show $ (p :: Integer)
         seemsLikeSpam = T.isInfixOf "http://"
 
 -- | Is a nickname valid? Digit/letter or one of these: -_/\\;()[]{}?`'
@@ -200,7 +213,7 @@ validNick s = first && all ok s && length s > 0 where
 
 -- | Get hints for a Haskell paste from hlint.
 generateHintsForPaste :: PasteSubmit -> PasteId -> HPModel [Suggestion]
-generateHintsForPaste PasteSubmit{..} (fromIntegral -> pid :: Integer) = io $
+generateHintsForPaste PasteSubmit{..} (PasteId pid) = io $
   E.catch (generateHints (show pid) pasteSubmitPaste)
           (\SomeException{} -> return [])
 

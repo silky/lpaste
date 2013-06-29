@@ -15,7 +15,7 @@ Executable hpaste
   Main-is:           Main.hs
   Ghc-options:       -threaded -Wall -O2 -fno-warn-name-shadowing
   Hs-source-dirs:    src
-  Build-depends:     
+  Build-depends:
     -- Hard versions
     base                      >= 4     && < 5
    ,css                       >= 0.1
@@ -52,3 +52,4 @@ Executable hpaste
    ,cgi
    ,process
    ,postgresql-simple
+   ,pureMD5

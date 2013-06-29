@@ -42,44 +42,26 @@ newAnnouncer config = do
 
 -- | Run the announcer bot.
 announcer ::  Announcer -> (Handle -> IO ()) -> IO ()
-announcer self@Announcer{annConfig=c@AnnounceConfig{..},annChan=ans} cont = do
-  logger "Announcer launched."
-  h <- connectTo announceHost (PortNumber $ fromIntegral announcePort)
-  hSetBuffering h NoBuffering
-  let write h line retry =
-        E.catch (do B.hPutStr h (encodeUtf8 (line ++ "\n"))
-                    T.putStrLn line)
-                (\(e :: IOError) -> do forkIO (announcer self (if retry
-                                                                  then (\h -> write h line retry)
-                                                                  else const (return ())))
-                                       E.throw e)
-      send l = write h l False
-  logger "Authenticating ..."
+announcer self@Announcer{annConfig=config,annChan=ans} cont = do
+  announcements <- getChanContents ans
+  forM_ announcements $ \ann ->
+    E.catch (sendIfNickExists config ann)
+            (\(e::IOError) -> return ())
+
+sendIfNickExists AnnounceConfig{..} (Announcement origin line) = do
+  handle <- connectTo announceHost (PortNumber $ fromIntegral announcePort)
+  hSetBuffering handle LineBuffering
+  let send = B.hPutStrLn handle . encodeUtf8
   send $ "PASS " ++ pack announcePass
   send $ "USER " ++ pack announceUser ++ " * * *"
   send $ "NICK " ++ pack announceUser
-  cont h
-  logger "Waiting for demands ..."
-  lines <- getChanContents ans
-  forM_ lines $ \(Announcement origin line) -> do
-    logger ("Whois for " ++ origin ++ ": " ++ line)
-    send $ "WHOIS :" ++ origin
-    fix $ \loop -> do
-      logger ("Waiting for " ++ origin ++ ": " ++ line)
-      incoming <- E.catch (T.hGetLine h)
-                          (\e -> do logger "* * * * Connection killed. Restarting ..."
-                                    forkIO (announcer self (const (return ())))
-                                    E.throw (e :: IOError))
-      logger ("Got " ++ incoming)
-      case T.takeWhile isDigit (T.drop 1 (T.dropWhile (/=' ') incoming)) of
-        "311" -> do logger "Writing..."
-                    write h line True
-	"401" -> logger "Doesn't exist."
-	_ -> loop
-
-logger x = do
-  t <- getCurrentTime
-  appendFile "/tmp/announcer-log.txt" (show t ++ ": " ++ unpack x ++ "\n")
+  send $ "WHOIS :" ++ origin
+  fix $ \loop -> do
+    incoming <- T.hGetLine handle
+    case T.takeWhile isDigit (T.drop 1 (T.dropWhile (/=' ') incoming)) of
+      "311" -> send line
+      "401" -> return ()
+      _ -> loop
 
 -- | Announce something to the IRC.
 announce :: Announcer -> Text -> Text -> Text -> IO ()

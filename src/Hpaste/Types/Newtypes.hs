@@ -15,7 +15,7 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.ToField
 
 newtype PasteId = PasteId Integer
-  deriving (Integral,Real,Num,Ord,Eq,Enum,FromField,ToField)
+  deriving (Eq,FromField,ToField,Ord)
 
 instance Show PasteId where show (PasteId pid) = show pid
 
