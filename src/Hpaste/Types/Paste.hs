@@ -31,7 +31,7 @@ import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.ToField
 import Language.Haskell.HLint                  (Severity)
-import Snap.Core                               
+import Snap.Core
 import Text.Blaze                              (ToHtml(..),toHtml)
 import Text.Blaze.Html5                        (Html)
 
@@ -54,7 +54,7 @@ instance ToHtml Paste where
 instance FromRow Paste where
   fromRow = do
     (pid,title,content,author,date,views,language,channel,annotation_of,revision_of) <- fromRow
-    return $ Paste 
+    return $ Paste
       { pasteTitle = title
       , pasteAuthor = author
       , pasteLanguage = language
@@ -131,7 +131,7 @@ data StepsPage = StepsPage {
 
 instance ToField Severity where
   toField = toField . show
- 
+
 --  render = Escape . toByteString . Utf8.fromString . show
 --  {-# INLINE render #-}
 

@@ -66,8 +66,9 @@ pasteFormlet pf@PasteFormlet{..} =
             H.div ! aClass "errors" $
               mapM_ (p . toHtml) pfErrors
         formletHtml (pasteSubmit pf) pfParams
-        p $ do submitI "private" "Create Secret Paste"
-               submitI "public" "Create Public Paste"
+        p $ do submitI "public" "Create Public Paste"
+               " "
+               submitI "private" "Create Secret Paste"
   in (pasteSubmit pf,form)
 
   where action = case pfAnnotatePaste of

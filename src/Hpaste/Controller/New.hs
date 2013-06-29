@@ -32,7 +32,7 @@ handle style = do
   pid <- if style == NewPaste then return Nothing else getPasteId
   case pid of
     Just pid -> do
-      paste <- model $ getPasteById (pid)
+      paste <- model $ getPasteById pid
       let apaste | style == AnnotatePaste = paste
       	  	 | otherwise = Nothing
       let epaste | style == EditPaste = paste

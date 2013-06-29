@@ -128,7 +128,7 @@ createOrUpdate langs chans paste@PasteSubmit{..} spamrating public = do
 -- | Create a new paste (possibly annotating an existing one).
 createPaste :: [Language] -> [Channel] -> PasteSubmit -> Integer -> Bool -> HPModel (Maybe PasteId)
 createPaste langs chans ps@PasteSubmit{..} spamrating public = do
-  pid <- generatePasteId
+  pid <- generatePasteId public
   res <- single ["INSERT INTO paste"
                 ,"(id,title,author,content,channel,language,annotation_of,revision_of,spamrating,public)"
                 ,"VALUES"
@@ -151,14 +151,16 @@ createPaste langs chans ps@PasteSubmit{..} spamrating public = do
         rev_pid = case pasteSubmitType of RevisionOf pid -> Just pid; _ -> Nothing
 
 -- | Generate a fresh unique paste id.
-generatePasteId :: HPModel PasteId
-generatePasteId = do
-  result <- single ["SELECT (RANDOM()*9223372036854775807) :: BIGINT"] ()
+generatePasteId :: Bool -> HPModel PasteId
+generatePasteId public = do
+  result <- if public
+               then single ["SELECT NEXTVAL('paste_id_seq')"] ()
+               else single ["SELECT (RANDOM()*9223372036854775807) :: BIGINT"] ()
   case result of
     Just pid@(PasteId i) -> do
       result <- single ["SELECT TRUE FROM paste WHERE id = ?"] (Only pid)
       case result :: Maybe PasteId of
-        Just pid -> generatePasteId
+        Just pid -> generatePasteId public
         _        -> return pid
 
 -- | Create the hints for a paste.
