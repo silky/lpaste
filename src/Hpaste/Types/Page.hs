@@ -8,11 +8,11 @@ module Hpaste.Types.Page
        where
 
 import Data.Text  (Text)
-import Text.Blaze (Html)
+import Text.Blaze (Markup)
 
 -- | A page to be rendered in a layout.
 data Page = Page {
     pageTitle :: Text
-  , pageBody :: Html
+  , pageBody :: Markup
   , pageName :: Text
   }

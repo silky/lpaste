@@ -46,7 +46,6 @@ import Prelude                hiding ((++))
 import Snap.App
 import System.Directory
 import System.FilePath
-import Data.Digest.Pure.MD5
 
 deletePaste :: Integer -> HPModel ()
 deletePaste pid = void (exec ["DELETE FROM paste WHERE id = ?"] (Only pid))

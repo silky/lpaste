@@ -32,8 +32,8 @@ import Database.PostgreSQL.Simple.FromField
 import Database.PostgreSQL.Simple.ToField
 import Language.Haskell.HLint                  (Severity)
 import Snap.Core
-import Text.Blaze                              (ToHtml(..),toHtml)
-import Text.Blaze.Html5                        (Html)
+import Text.Blaze                              (ToMarkup(..),toMarkup)
+import Text.Blaze.Html5                        (Markup)
 
 -- | A paste.
 data Paste = Paste {
@@ -48,8 +48,8 @@ data Paste = Paste {
   ,pasteType     :: PasteType
 } deriving Show
 
-instance ToHtml Paste where
-  toHtml paste@Paste{..} = toHtml $ pack $ show paste
+instance ToMarkup Paste where
+  toMarkup paste@Paste{..} = toMarkup $ pack $ show paste
 
 instance FromRow Paste where
   fromRow = do
@@ -126,7 +126,7 @@ data StepsPage = StepsPage {
   , spSteps           :: [Text]
   , spAnnotations     :: [Paste]
   , spAnnotationHints :: [[Hint]]
-  , spForm :: Html
+  , spForm :: Markup
 }
 
 instance ToField Severity where

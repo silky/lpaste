@@ -17,7 +17,8 @@ module Hpaste.View.Html
   ,clear
   ,showLanguage
   ,showChannel
-  ,paginate)
+  ,paginate
+  ,preEscapedString)
   where
 
 import           Hpaste.Types
@@ -47,62 +48,62 @@ aClasses names = A.class_ $
   toValue $ T.intercalate " " $ map ("amelie-" ++) names
 
 -- | A warning section.
-warnNoTitleSection :: Html -> Html
+warnNoTitleSection :: Markup -> Markup
 warnNoTitleSection inner =
   H.div ! aClasses ["section","section-warn"] $ do
     inner
 
 -- | An error section.
-errorNoTitleSection :: Html -> Html
+errorNoTitleSection :: Markup -> Markup
 errorNoTitleSection inner =
   H.div ! aClasses ["section","section-error"] $ do
     inner
 
 -- | A dark section.
-darkSection :: Text -> Html -> Html
+darkSection :: Text -> Markup -> Markup
 darkSection title inner =
   H.div ! aClasses ["section","section-dark"] $ do
-    h2 $ toHtml title
+    h2 $ toMarkup title
     inner
 
 -- | A dark section.
-darkNoTitleSection :: Html -> Html
+darkNoTitleSection :: Markup -> Markup
 darkNoTitleSection inner =
   H.div ! aClasses ["section","section-dark"] $ do
     inner
 
 -- | A light section.
-lightSection :: Text -> Html -> Html
+lightSection :: Text -> Markup -> Markup
 lightSection title inner =
   H.div ! aClasses ["section","section-light"] $ do
-    h2 $ toHtml title
+    h2 $ toMarkup title
     inner
 
 -- | A light section with no title.
-lightNoTitleSection :: Html -> Html
+lightNoTitleSection :: Markup -> Markup
 lightNoTitleSection inner =
   H.div ! aClasses ["section","section-light"] $ do
     inner
 
 -- | An anchor link.
-href :: (ToValue location,ToHtml html) => location -> html -> Html
-href loc content = H.a ! A.href (toValue loc) $ toHtml content
+href :: (ToValue location,ToMarkup html) => location -> html -> Markup
+href loc content = H.a ! A.href (toValue loc) $ toMarkup content
 
 -- | A clear:both element.
-clear :: Html
+clear :: Markup
 clear = H.div ! aClass "clear" $ return ()
 
 -- | Show a language.
-showLanguage :: [Language] -> Maybe LanguageId -> Html
+showLanguage :: [Language] -> Maybe LanguageId -> Markup
 showLanguage languages lid =
-  toHtml $ fromMaybe "-" (lid >>= (`lookup` langs))
+  toMarkup $ fromMaybe "-" (lid >>= (`lookup` langs))
 
     where langs = map (languageId &&& languageTitle) languages
 
 -- | Show a channel.
-showChannel :: Maybe Paste -> [Channel] -> Maybe ChannelId -> Html
+showChannel :: Maybe Paste -> [Channel] -> Maybe ChannelId -> Markup
 showChannel paste channels lid = do
-  toHtml $ fromMaybe "-" chan
+  toMarkup $ fromMaybe "-" chan
   case (paste,chan) of
     (Just paste,Just c) | c == "#haskell" -> do
       " "
@@ -114,23 +115,23 @@ showChannel paste channels lid = do
           chan = (lid >>= (`lookup` langs))
 
 -- | Render results with pagination.
-paginate :: URI -> Pagination -> Html -> Html
+paginate :: URI -> Pagination -> Markup -> Markup
 paginate uri pn inner = do
   nav uri pn True
   inner
   nav uri pn False
 
 -- | Show a pagination navigation, with results count, if requested.
-nav :: URI -> Pagination -> Bool -> Html
+nav :: URI -> Pagination -> Bool -> Markup
 nav uri pn@Pagination{..} showTotal = do
   H.div ! aClass "pagination" $ do
     H.div ! aClass "inner" $ do
       when (pnCurrentPage-1 > 0) $ navDirection uri pn (-1) "Previous"
-      toHtml (" " :: Text)
+      toMarkup (" " :: Text)
       when (pnTotal == pnPerPage) $ navDirection uri pn 1 "Next"
       when showTotal $ do
         br
-        toHtml $ results
+        toMarkup $ results
 
     where results = unwords [show start ++ "—" ++ show end
                             ,"results of"
@@ -139,10 +140,14 @@ nav uri pn@Pagination{..} showTotal = do
           end = pnCurrentPage * pnTotal
 
 -- | Link to change navigation page based on a direction.
-navDirection :: URI -> Pagination -> Integer -> Text -> Html
+navDirection :: URI -> Pagination -> Integer -> Text -> Markup
 navDirection uri Pagination{..} change caption = do
-  a ! hrefURI uri $ toHtml caption
+  a ! hrefURI uri $ toMarkup caption
 
   where uri = updateUrlParam "page"
   	      		     (show (pnCurrentPage + change))
-			     uri   
+			     uri
+
+-- | Migration function.
+preEscapedString :: String -> Markup
+preEscapedString = preEscapedToMarkup

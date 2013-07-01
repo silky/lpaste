@@ -41,7 +41,7 @@ import           Text.Blaze.Extra
 import           Text.Formlet
 
 -- | Render the page page.
-page :: PastePage -> Html
+page :: PastePage -> Markup
 page PastePage{ppPaste=p@Paste{..},..} =
   layoutPage $ Page {
     pageTitle = pasteTitle
@@ -58,13 +58,13 @@ page PastePage{ppPaste=p@Paste{..},..} =
   }
 
 -- | A formlet for paste submission / annotateing.
-pasteFormlet :: PasteFormlet -> (Formlet PasteSubmit,Html)
+pasteFormlet :: PasteFormlet -> (Formlet PasteSubmit,Markup)
 pasteFormlet pf@PasteFormlet{..} =
   let form = postForm ! A.action (toValue action) $ do
         when pfSubmitted $
           when (not (null pfErrors)) $
             H.div ! aClass "errors" $
-              mapM_ (p . toHtml) pfErrors
+              mapM_ (p . toMarkup) pfErrors
         formletHtml (pasteSubmit pf) pfParams
         p $ do submitI "public" "Create Public Paste"
                " "
@@ -83,7 +83,7 @@ pasteFormlet pf@PasteFormlet{..} =
 
 
 -- | Make a submit (captioned) button.
-submitI :: Text -> Text -> Html
+submitI :: Text -> Text -> Markup
 submitI name caption =
   H.input ! A.type_ "submit"
           ! A.name (toValue name)
@@ -144,23 +144,23 @@ getPasteId PasteFormlet{..} =
   return . PasteId
 
 -- | View the paste's annotations.
-viewAnnotations :: [Paste] -> [Channel] -> [Language] -> [(Paste,[Hint])] -> Html
+viewAnnotations :: [Paste] -> [Channel] -> [Language] -> [(Paste,[Hint])] -> Markup
 viewAnnotations pastes chans langs annotations = do
   mapM_ (viewPaste [] pastes chans langs) annotations
 
 -- | View a paste's details and content.
-viewPaste :: [Paste] -> [Paste] -> [Channel] -> [Language] -> (Paste,[Hint]) -> Html
+viewPaste :: [Paste] -> [Paste] -> [Channel] -> [Language] -> (Paste,[Hint]) -> Markup
 viewPaste revisions annotations chans langs (paste@Paste{..},hints) = do
   pasteDetails revisions annotations chans langs paste
   pasteContent revisions langs paste
   viewHints hints
 
 -- | List the details of the page in a dark section.
-pasteDetails :: [Paste] -> [Paste] -> [Channel] -> [Language] -> Paste -> Html
+pasteDetails :: [Paste] -> [Paste] -> [Channel] -> [Language] -> Paste -> Markup
 pasteDetails revisions annotations chans langs paste =
   darkNoTitleSection $ do
     pasteNav annotations paste
-    h2 $ toHtml $ fromStrict (pasteTitle paste)
+    h2 $ toMarkup $ fromStrict (pasteTitle paste)
     ul ! aClass "paste-specs" $ do
       detail "Paste" $ do
         pasteLink paste $ "#" ++ show (pasteId paste)
@@ -181,14 +181,14 @@ pasteDetails revisions annotations chans langs paste =
     clear
 
     where detail title content = do
-            li $ do strong (title ++ ":"); toHtml content
+            li $ do strong (title ++ ":"); toMarkup content
 
 -- | Link to an author.
-linkAuthor :: Text -> Html
-linkAuthor author = href ("/browse?author=" ++ author) $ toHtml author
+linkAuthor :: Text -> Markup
+linkAuthor author = href ("/browse?author=" ++ author) $ toMarkup author
 
 -- | Link to annotation/revision parents.
-linkToParent :: Paste -> Html
+linkToParent :: Paste -> Markup
 linkToParent paste = do
   case pasteType paste of
     NormalPaste -> return ()
@@ -196,7 +196,7 @@ linkToParent paste = do
     RevisionOf pid -> do "(a revision of "; pidLink pid; ")"
 
 -- | List the revisions of a paste.
-listRevisions :: Paste -> [Paste] -> Html
+listRevisions :: Paste -> [Paste] -> Markup
 listRevisions _ [] = return ()
 listRevisions p [x] = revisionDetails p x
 listRevisions p (x:y:xs) = do
@@ -204,23 +204,23 @@ listRevisions p (x:y:xs) = do
   listRevisions p (y:xs)
 
 -- | List the details of a revision.
-revisionDetails :: Paste -> Paste -> Html
+revisionDetails :: Paste -> Paste -> Markup
 revisionDetails paste revision = li $ do
-  toHtml $ showDateTime (pasteDate revision)
+  toMarkup $ showDateTime (pasteDate revision)
   " "
-  revisionLink revision $ do "#"; toHtml (show (pasteId revision))
+  revisionLink revision $ do "#"; toMarkup (show (pasteId revision))
   unless (pasteId paste == pasteId revision) $ do
     " "
     href ("/diff/" ++ show (pasteId paste) ++ "/" ++ show (pasteId revision)) $
-      ("(diff)" :: Html)
+      ("(diff)" :: Markup)
   ": "
-  toHtml (pasteTitle revision)
+  toMarkup (pasteTitle revision)
   " ("
   linkAuthor (pasteAuthor revision)
   ")"
 
 -- | Individual paste navigation.
-pasteNav :: [Paste] -> Paste -> Html
+pasteNav :: [Paste] -> Paste -> Markup
 pasteNav pastes paste =
   H.div ! aClass "paste-nav" $ do
     diffLink
@@ -250,24 +250,24 @@ pasteNav pastes paste =
               Nothing -> return (); Just{} -> " - "
 
 -- | Show the paste content with highlighting.
-pasteContent :: [Paste] -> [Language] -> Paste -> Html
+pasteContent :: [Paste] -> [Language] -> Paste -> Markup
 pasteContent revisions langs paste =
   case revisions of
     (rev:_) -> lightNoTitleSection $ highlightPaste langs rev
     _ -> lightNoTitleSection $ highlightPaste langs paste
 
 -- | The href link to a paste.
-pasteLink :: ToHtml html => Paste -> html -> Html
+pasteLink :: ToMarkup html => Paste -> html -> Markup
 pasteLink Paste{..} inner = href ("/" ++ show pasteId) inner
 
 -- | The href link to a paste pid.
-pidLink :: PasteId -> Html
-pidLink pid = href ("/" ++ show pid) $ toHtml $ "#" ++ show pid
+pidLink :: PasteId -> Markup
+pidLink pid = href ("/" ++ show pid) $ toMarkup $ "#" ++ show pid
 
 -- | The href link to a paste.
-revisionLink :: ToHtml html => Paste -> html -> Html
+revisionLink :: ToMarkup html => Paste -> html -> Markup
 revisionLink Paste{..} inner = href ("/revision/" ++ show pasteId) inner
 
 -- | The href link to a paste, raw content.
-pasteRawLink :: ToHtml html => Paste -> html -> Html
+pasteRawLink :: ToMarkup html => Paste -> html -> Markup
 pasteRawLink Paste{..} inner = href ("/raw/" ++ show pasteId) inner
