@@ -27,7 +27,7 @@ layoutPage Page{..} = do
       js "amelie.js"
       js "fudge.js"
       js "highlight.pack.js"
-      title $ toMarkup $ pageTitle ++ " :: hpaste — Haskell Pastebin"
+      title $ toMarkup $ pageTitle ++ " :: lpaste — Lambda pastebin"
       script $
         "hljs.tabReplace = '    ';hljs.initHighlightingOnLoad();"
     body ! A.id (toValue pageName) $ do
@@ -50,11 +50,12 @@ layoutPage Page{..} = do
                         ! A.src ("/js/" ++ s) $
                         return ()
 
--- | Show the hpaste logo.
+-- | Show the lpaste logo.
 logo :: Markup
 logo = do
-  a ! aClass "logo" ! A.href "/" ! A.title "Back to home" $ do
-    "hpaste"
+  h1 $
+    a ! aClass "logo" ! A.href "/" ! A.title "Back to home" $ do
+      "λ-Paste"
 
 -- | Layout wrapper.
 wrap :: Markup -> Markup
@@ -71,7 +72,7 @@ nav = do
 -- | Page footer.
 foot :: Markup
 foot = H.div ! aClass "footer" $ p $
-  lnk "http://github.com/chrisdone/hpaste" "Web site source code on Github"
+  lnk "http://github.com/chrisdone/lpaste" "Web site source code on Github"
   //
   lnk "http://book.realworldhaskell.org/" "Real World Haskell"
   //

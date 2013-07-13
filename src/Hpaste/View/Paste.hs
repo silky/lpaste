@@ -120,10 +120,14 @@ pasteSubmit pf@PasteFormlet{..} =
 
           defChan = maybe (fromMaybe "" (annotateChan <|> editChan)
 	  	    	  ,fromMaybe "haskell" (annotateLanguage <|> editLanguage))
-                          (channelName &&& trim.channelName)
+                          (channelName &&& makeChan . channelName)
                           (pfDefChan >>= findChan)
-          findChan name = find ((==name).trim.channelName) pfChannels
-          trim = T.dropWhile (=='#')
+          findChan name = find ((==name).T.drop 1.channelName) pfChannels
+	  makeChan "#haskell" = "haskell"
+	  makeChan "#idris" = "idris"
+	  makeChan "#agda" = "agda"
+	  makeChan "#yesod" = "haskell"
+	  makeChan _ = ""
 
           annotateTitle = ((++ " (annotation)") . pasteTitle) <$> pfAnnotatePaste
           annotateLanguage = join (fmap pasteLanguage pfAnnotatePaste) >>= findLangById
