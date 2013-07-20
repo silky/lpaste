@@ -23,7 +23,7 @@ import Snap.App
 handle :: Bool -> HPCtrl ()
 handle spam = do
   html <- cacheIf (not spam) Key.Home $ do
-    pastes <- model $ getLatestPastes
+    pastes <- model $ getLatestPastes Nothing
     chans <- model $ getChannels
     langs <- model $ getLanguages
     form <- pasteForm chans langs Nothing Nothing Nothing

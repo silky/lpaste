@@ -60,14 +60,15 @@ countPublicPastes mauthor = do
   return $ fromMaybe 0 rows
 
 -- | Get the latest pastes.
-getLatestPastes :: HPModel [Paste]
-getLatestPastes =
+getLatestPastes :: Maybe ChannelId -> HPModel [Paste]
+getLatestPastes channel =
   query ["SELECT ",pasteFields
 	,"FROM public_toplevel_paste"
 	,"WHERE spamrating < ?"
+        ,"AND channel = ?"
 	,"ORDER BY created DESC"
 	,"LIMIT 20"]
-       (Only spamMinLevel)
+       (spamMinLevel,channel)
 
 -- | Get some paginated pastes.
 getPaginatedPastes :: Maybe String -> Pagination -> HPModel (Pagination,[Paste])

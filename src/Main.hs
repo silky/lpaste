@@ -16,6 +16,7 @@ import Hpaste.Controller.Raw      as Raw
 import Hpaste.Controller.Report   as Report
 import Hpaste.Controller.Reported as Reported
 import Hpaste.Controller.Style    as Style
+import Hpaste.Controller.Rss      as Rss
 import Hpaste.Controller.Script   as Script
 import Hpaste.Model.Announcer     (newAnnouncer)
 import Hpaste.Types
@@ -63,5 +64,6 @@ serve config pool ans = route routes where
            ,("/activity",run Activity.handle)
            ,("/diff/:this/:that",run Diff.handle)
 	   ,("/delete",run Report.handleDelete)
+           ,("/channel/:channel/rss",run Rss.handle)
            ]
   run = runHandler ans config pool
