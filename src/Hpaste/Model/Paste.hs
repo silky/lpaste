@@ -65,10 +65,10 @@ getLatestPastes channel =
   query ["SELECT ",pasteFields
 	,"FROM public_toplevel_paste"
 	,"WHERE spamrating < ?"
-        ,"AND channel = ?"
+        ,"AND channel = ? or ? is null"
 	,"ORDER BY created DESC"
 	,"LIMIT 20"]
-       (spamMinLevel,channel)
+       (spamMinLevel,channel,channel)
 
 -- | Get some paginated pastes.
 getPaginatedPastes :: Maybe String -> Pagination -> HPModel (Pagination,[Paste])
