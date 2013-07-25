@@ -25,3 +25,6 @@ log_dir = irc_logs
 [ADDRESSES]
 admin = email@yourdomain.com
 site_addy = noreply@yourdomain.org
+
+[ADMIN]
+key = myadminpass
