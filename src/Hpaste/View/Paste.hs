@@ -195,8 +195,8 @@ viewPaste revisions annotations chans langs (paste@Paste{..},hints) = do
 pasteDetails :: [Paste] -> [Paste] -> [Channel] -> [Language] -> Paste -> Markup
 pasteDetails revisions annotations chans langs paste =
   darkNoTitleSection $ do
-    pasteNav annotations paste
     h2 $ toMarkup $ fromStrict (pasteTitle paste)
+    pasteNav annotations paste
     ul ! aClass "paste-specs" $ do
       detail "Paste" $ do
         pasteLink paste $ "#" ++ show (pasteId paste)

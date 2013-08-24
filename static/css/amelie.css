@@ -284,6 +284,7 @@ table td {
 /* Paste page */
 
 .paste-nav {
+  margin-top: 0.5em;
   color: #aaa;
 }
 .paste-nav a {
