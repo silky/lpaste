@@ -15,7 +15,6 @@ import Hpaste.Controller.Paste    as Paste
 import Hpaste.Controller.Raw      as Raw
 import Hpaste.Controller.Report   as Report
 import Hpaste.Controller.Reported as Reported
-import Hpaste.Controller.Style    as Style
 import Hpaste.Controller.Rss      as Rss
 import Hpaste.Controller.Script   as Script
 import Hpaste.Model.Announcer     (newAnnouncer)
@@ -44,9 +43,8 @@ main = do
 -- | Serve the controllers.
 serve :: Config -> Pool -> Announcer -> Snap ()
 serve config pool ans = route routes where
-  routes = [("/css/amelie.css", run Style.handle)
-           ,("/css/",serveDirectory "static/css")
-           ,("/js/amelie.js",run Script.handle)
+  routes = [("/css/",serveDirectory "static/css")
+           ,("/js/amelie.hs.js",run Script.handle)
            ,("/js/",serveDirectory "static/js")
            ,("/hs/",serveDirectory "static/hs")
            ,("",run (Home.handle False))

@@ -13,33 +13,36 @@ import           Hpaste.View.Html
 import           Hpaste.View.Layout
 import           Hpaste.View.Paste  (pasteLink)
 
-import Data.Pagination
 import           Control.Monad
 import           Data.Maybe
 import           Data.Monoid.Operator
+import           Data.Pagination
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
-import           Data.Time.Show     (showDateTime)
+import           Data.Time
+import           Data.Time.Relative
 import           Network.URI
 import           Network.URI.Params
 import           Prelude            hiding ((++))
 import           Snap.App.Types
+import           System.Locale
 import           Text.Blaze.Extra
-import           Text.Blaze.Pagination
 import           Text.Blaze.Html5   as H hiding (map)
+import qualified Text.Blaze.Html5.Attributes   as A
+import           Text.Blaze.Pagination
 
 -- | Render the browse page.
-page :: PN -> [Channel] -> [Language] -> [Paste] -> Maybe String -> Html
-page pn chans langs ps mauthor =
+page :: UTCTime -> PN -> [Channel] -> [Language] -> [Paste] -> Maybe String -> Html
+page now pn chans langs ps mauthor =
   layoutPage $ Page {
     pageTitle = "Browse pastes"
-  , pageBody = browse pn chans langs ps mauthor
+  , pageBody = browse now pn chans langs ps mauthor
   , pageName = "browse"
   }
 
 -- | View the paginated pastes.
-browse :: PN -> [Channel] -> [Language] -> [Paste] -> Maybe String -> Html
-browse pn channels languages ps mauthor = do
+browse :: UTCTime -> PN -> [Channel] -> [Language] -> [Paste] -> Maybe String -> Html
+browse now pn channels languages ps mauthor = do
   darkSection title $ do
     pagination pn
     table ! aClass "latest-pastes" $ do
@@ -56,12 +59,19 @@ browse pn channels languages ps mauthor = do
 			 if True -- validNick author
 			    then a ! hrefURI (authorUri author) $ toHtml pasteAuthor
 			    else toHtml pasteAuthor
-                     td $ toHtml $ showDateTime $ pasteDate
+                     td $ ago pasteDate now
                      td $ showLanguage languages pasteLanguage
                      td $ showChannel Nothing channels pasteChannel
           authorUri author = updateUrlParam "author" author
-	  	    	   $ updateUrlParam "page"   "0"
+	  	    	   $ updateUrlParam "pastes_page"   "0"
 			   $ pnURI pn
           title = LT.pack $ case mauthor of
 	    Just author -> "Pastes by " ++ author
 	    Nothing -> "Latest pastes"
+
+epoch = formatTime defaultTimeLocale "%s"
+
+ago t1 t2 = H.span !. "relative-time"
+                   ! dataAttribute "epoch" (toValue (epoch t1))
+                   ! A.title (toValue (show t1)) $
+   toHtml (relative t1 t2 True)

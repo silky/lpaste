@@ -39,8 +39,10 @@ highlightPaste langs Paste{..} =
          | elem languageName ["haskell","agda","idris"] ->
           preEscapedString $ hscolour False (unpack pastePaste)
         Just (Language{..}) ->
-          pre $ code ! A.class_ (toValue $ "language-" ++ languageName) $
+          pre $ code ! A.class_ (toValue $ "language-" ++ lang) $
             toHtml pastePaste
+	    where lang | languageName == "elisp" = "lisp"
+	    	       | otherwise = languageName
         _ ->
           pre $ toHtml pastePaste
 

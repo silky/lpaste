@@ -52,10 +52,7 @@ layoutPage Page{..} = do
 
 -- | Show the lpaste logo.
 logo :: Markup
-logo = do
-  h1 $
-    a ! aClass "logo" ! A.href "/" ! A.title "Back to home" $ do
-      "λ-Paste"
+logo = return ()
 
 -- | Layout wrapper.
 wrap :: Markup -> Markup
@@ -65,9 +62,11 @@ wrap x = H.div ! aClass "wrap" $ x
 nav :: Markup
 nav = do
   H.div ! aClass "nav" $ do
-    a ! A.href "mailto:chrisdone@gmail.com" $ "Contact/support"
-    " | "
-    a ! A.href "/activity" $ "Changelog"
+    a ! aClass "logo" ! A.href "/" $ "λ"
+    a ! A.href "/browse" $ "Browse"
+    a ! A.href "mailto:chrisdone@gmail.com" $ "Contact"
+    -- " | "
+    -- a ! A.href "/activity" $ "Changes"
 
 -- | Page footer.
 foot :: Markup

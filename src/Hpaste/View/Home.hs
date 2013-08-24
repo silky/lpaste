@@ -39,7 +39,7 @@ content uri chans langs ps form spam = do
                               "Try reducing links and making your paste look less spammy. "
 			      "If the problem persists, try contacting support and we will adjust the spam filters."
   createNew form
-  latest uri chans langs ps
+  -- latest uri chans langs ps
 
 -- | Create a new paste section.
 createNew :: Html -> Html

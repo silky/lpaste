@@ -38,14 +38,14 @@ import qualified Text.Blaze.Html5.Attributes as A
 import           Text.Blaze.Extra
 import Snap.App.Types
 
--- | A class prefixed with amelie-.
+-- | A class prefixed with nothing.
 aClass :: AttributeValue -> Attribute
-aClass name = A.class_ ("amelie-" ++ name)
+aClass name = A.class_ (name)
 
--- | A class prefixed with amelie-.
+-- | A class prefixed with nothing.
 aClasses :: [Text] -> Attribute
 aClasses names = A.class_ $
-  toValue $ T.intercalate " " $ map ("amelie-" ++) names
+  toValue $ T.intercalate " " $ names
 
 -- | A warning section.
 warnNoTitleSection :: Markup -> Markup

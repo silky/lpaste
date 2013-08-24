@@ -13,6 +13,8 @@ import Hpaste.Model.Language (getLanguages)
 import Hpaste.Model.Paste    (getPaginatedPastes,countPublicPastes)
 import Hpaste.View.Browse    (page)
 
+import Control.Monad.IO
+import Data.Time
 import Text.Blaze.Pagination
 import Snap.App
 
@@ -24,4 +26,5 @@ handle = do
   (pn',pastes) <- model $ getPaginatedPastes author (pnPn pn)
   chans <- model getChannels
   langs <- model getLanguages
-  output $ page pn { pnPn = pn' } chans langs pastes author
+  now <- io getCurrentTime
+  output $ page now pn { pnPn = pn' } chans langs pastes author

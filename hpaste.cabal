@@ -61,7 +61,6 @@ Executable hpaste
              Hpaste.Controller.New
              Hpaste.Controller.Paste
              Hpaste.Controller.Activity
-             Hpaste.Controller.Style
              Hpaste.Controller.Diff
              Hpaste.Model.Irclogs
              Hpaste.Model.Language
@@ -87,7 +86,6 @@ Executable hpaste
              Hpaste.View.Edit
              Hpaste.View.Paste
              Hpaste.View.Activity
-             Hpaste.View.Style
              Hpaste.View.Diff
              Hpaste.View.Hlint
              Hpaste.View.Steps
@@ -100,7 +98,6 @@ Executable hpaste
    ,blaze-markup              >= 0.5
    -- Soft versions
    ,base                      >= 4     && < 5
-   ,css                       >= 0.1
    ,named-formlet             >= 0.2
    ,snap-app                  >= 0.6.0
    -- Free versions

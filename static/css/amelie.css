@@ -1,0 +1,323 @@
+/* General stuff */
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  padding: 0;
+  margin: 0;
+  background: #f7f7f7;
+}
+a {
+  color: #4e6272;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+input,.text,select {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+}
+textarea {
+  font-family: "ubuntu mono", monaco, consolas, monospace;
+  font-size: 15px;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Main wrapper */
+
+.wrap {
+  background: #ffffff;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* General sections */
+
+/* Bit of padding */
+.section {
+  margin: 1em;
+  color: #444;
+}
+.nav + .section > h2 {
+  margin-top: 0;
+}
+.nav + .section > .paste-nav + h2 {
+  margin-top: 0.75em;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Navigation */
+
+/* Main nav */
+.nav {
+  /* Positioning */
+  text-align: right;
+  height: 45px;
+  line-height: 45px;
+  padding-right: 1em;
+  /* Foreground color */
+  color: #97a6b2;
+  text-shadow: 0 1px 0 rgba(255,255,255,.1), 0 0 30px rgba(255,255,255,.125);
+  /* Background color */
+  background-color: #252b30;
+  background-image: -moz-linear-gradient(top, #222222, #293845);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#222222), to(#293845));
+  background-image: -webkit-linear-gradient(top, #222222, #293845);
+  background-image: -o-linear-gradient(top, #222222, #293845);
+  background-image: linear-gradient(to bottom, #222222, #293845);
+  background-repeat: repeat-x;
+  border-color: #4e6272;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff222222', endColorstr='#ff293845', GradientType=0);
+}
+/* Links */
+.nav a {
+  color: #e5ebf0;
+  text-decoration: none;
+}
+.nav a + a {
+  margin-left: 1em;
+}
+
+.logo {
+  position: absolute;
+  font-size: 1.5em;
+  left: 1em;
+  font-weight: bold;
+  color: #fff;
+  opacity: 0.7;
+  text-shadow: 2px 2px 1px #222;
+}
+.logo:hover {
+  opacity: 1;
+}
+#home h2, #browse h2 {
+  display: none;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Paste form */
+
+input[name=title] {
+  width: 20em;
+}
+input[name=author] {
+  width: 8em;
+}
+select[name=language] {
+  width: 7em;
+}
+select[name=channel] {
+  width: 7em;
+}
+/* Hide the labels */
+form > p > label > span {
+  display: none;
+}
+/* Code area is big */
+form > textarea  {
+  margin-top: 1em;
+  display: block;
+  width: 100%;
+  height: 30em;
+}
+.paste-buttons {
+  float: right;
+}
+.paste-buttons .public {
+  cursor: pointer;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+}
+.paste-buttons .private {
+  color: #555;
+}
+.paste-buttons .private:hover {
+  color: #222;
+  cursor: pointer;
+}
+.spam { display: none; }
+textarea,.text {
+  border: 1px solid #aaa;
+  border-radius: 0.1em;
+}
+.text + .text,
+.text + select,
+select + select {
+  margin-left: 0.25em;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Colors */
+
+pre .hs-comment        { color:#555 }
+pre .hs-keyword        { color:#397460 }
+pre .hs-str            { color:#366354 }
+pre .hs-conid          { color:#4F4371 }
+pre .hs-varop          { color:#333 }
+pre .hs-varid          { color:#333 }
+pre .hs-num            { color:#4F4371 }
+pre .diff              { color:#555 }
+pre code .title        { color:#333 }
+pre code .string       { color:#366354 }
+pre code .built_in     { color:#397460 }
+pre code .preprocessor { color:#4F4371 }
+pre code .comment      { color:#555 }
+pre code .command      { color:#397460 }
+pre code .special      { color:#333 }
+pre code .formula      { color:#4F4371 }
+pre code .keyword      { color:#397460 }
+pre code .number       { color:#4F4371 }
+pre code .header       { color:#555 }
+pre code .deletion     { background-color:#FDD; color:#695B5B }
+pre code .addition     { background-color:#DFD; color:#000 }
+pre                    { margin:0 }
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Diffs */
+
+.diff-first {
+  background-color:#FDD;
+  color:#695B5B
+}
+.diff-second {
+  background-color:#DFD
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Line numbers */
+
+.code td {
+  vertical-align:top
+}
+.line-nums pre {
+  margin:0 1em 0 0;
+  text-align:right
+}
+.line-nums pre a {
+  text-decoration:none;
+  color: #666;
+}
+.line-nums pre a:hover {
+  color: blue;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Footer */
+
+.footer {
+  border-top: 1px solid #eee;
+  background: #f7f7f7;
+  padding: 1em;
+}
+.footer p {
+  margin: 0;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Hints */
+
+.section-warn,.section-error {
+  padding: 0.6em;
+  margin: 0;
+}
+.section-light + .section-warn,
+.section-light + .section-error {
+  margin-top: 1em;
+}
+.section-error + .section-error,
+.section-warn + .section-warn,
+.section-error + .section-warn {
+  border-top: 0;
+}
+.section-warn {
+  background: #FFF9C7;
+  color: #915c31;
+  border-top: 1px solid #FFF178;
+  border-bottom: 1px solid #FFF178
+}
+.section-error {
+  background: #FFDFDF;
+  color: #5b4444;
+  border-top: 1px solid #EFB3B3;
+  border-bottom: 1px solid #EFB3B3;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Pagination */
+
+.pages-list {
+  list-style-type: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+.pages-list li {
+  display: inline-block;
+}
+.pages-list li + li {
+  margin-left: 1em;
+}
+.pages-list a.active {
+  color: #222;
+  font-weight: bold;
+  cursor: default;
+}
+.pages-list a.active:hover,
+.pages-list li.disabled a:hover {
+  text-decoration: none;
+  cursor: default;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Browse page */
+
+table th {
+  text-align: left;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid #ccc;
+}
+table td {
+  padding-right: 1em;
+  padding-top: 1em;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Paste page */
+
+.paste-nav {
+  color: #aaa;
+}
+.paste-nav a {
+  color: #4e6272;
+}
+
+.section-dark {
+  background: #f7f7f7;
+  margin: 0 !important;
+  padding-left: 1em;
+  padding-top: 1em;
+  padding-bottom: 0.5em;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+.section-dark h2 {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.section-dark + .section-light {
+  margin-top: 0;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Paste specs */
+
+.paste-specs {
+  list-style-type: none;
+  padding-left: 0;
+}
+.paste-specs > li {
+  line-height: 1.8em;
+}
+.paste-specs > li > strong {
+  display: inline-block;
+  width: 6em;
+}

@@ -65,10 +65,11 @@ pasteFormlet pf@PasteFormlet{..} =
           when (not (null pfErrors)) $
             H.div ! aClass "errors" $
               mapM_ (p . toMarkup) pfErrors
+        H.div !. "paste-buttons" $ do submitI "private" "Private" !. "private"
+                                      " "
+                                      submitI "public" "Public" !. "public"
         formletHtml (pasteSubmit pf) pfParams
-        p $ do submitI "public" "Create Public Paste"
-               " "
-               submitI "private" "Create Secret Paste"
+
   in (pasteSubmit pf,form)
 
   where action = case pfAnnotatePaste of
@@ -100,13 +101,13 @@ pasteSubmit pf@PasteFormlet{..} =
 	       _ -> case pfEditPaste of
 	         Just pid -> RevisionOf (pasteId pid)
 		 _ -> NormalPaste)
-    <*> req (textInput "title" "Title" (annotateTitle <|> editTitle))
-    <*> defaulting "Anonymous Coward" (textInput "author" "Author" Nothing)
+    <*> defaulting "No title" (textPlaceholder "title" "Title" (annotateTitle <|> editTitle))
+    <*> defaulting "Anonymous Coward" (textPlaceholder "author" "Author" Nothing)
     <*> parse (traverse lookupLang)
-              (opt (dropInput languages "language" "Language" (snd defChan)))
+              (opt (dropPlace languages "language" (snd defChan)))
     <*> parse (traverse lookupChan)
-              (opt (dropInput channels "channel" "Channel" (fst defChan)))
-    <*> req (areaInput "paste" "Paste" pfContent)
+              (opt (dropPlace channels "channel" (fst defChan)))
+    <*> req (areaPlaceholder "paste" "Enter your code here" pfContent)
     <*> opt (wrap (H.div ! aClass "spam") (textInput "email" "Email" Nothing))
 
     where defaulting def = fmap swap where
@@ -127,6 +128,7 @@ pasteSubmit pf@PasteFormlet{..} =
 	  makeChan "#idris" = "idris"
 	  makeChan "#agda" = "agda"
 	  makeChan "#yesod" = "haskell"
+	  makeChan "#emacs" = "elisp"
 	  makeChan _ = ""
 
           annotateTitle = ((++ " (annotation)") . pasteTitle) <$> pfAnnotatePaste
@@ -139,6 +141,36 @@ pasteSubmit pf@PasteFormlet{..} =
 
           findChanById id = channelName <$> find ((==id).channelId) pfChannels
           findLangById id = languageName <$> find ((==id).languageId) pfLanguages
+
+-- | Make a text input formlet with a placeholder.
+textPlaceholder :: Text -> Text -> Maybe Text -> Formlet Text
+textPlaceholder name caption def =
+  formlet name $ \value -> do
+    input ! A.name (toValue name)
+          ! A.value (toValue $ fromMaybe "" (value <|> def))
+          ! A.placeholder (toValue caption)
+          ! A.class_ "text"
+
+-- | Make a textarea input with a placeholder.
+areaPlaceholder :: Text -> Text -> Maybe Text -> Formlet Text
+areaPlaceholder name caption def =
+  formlet name $ \value -> do
+    textarea ! A.placeholder (toValue caption) ! A.name (toValue name) $
+      toHtml $ fromMaybe "" (value <|> def)
+
+-- | Make a drop down input.
+dropPlace :: [(Text,Text)] -> Text -> Text -> Formlet Text
+dropPlace values name  def =
+  formlet name $ \value -> do
+    select ! A.name (toValue name) $
+      forM_ values $ \(key,title) -> do
+        let nonSelected = all ((/=value) . Just . fst) values
+            defaulting = nonSelected && def == key
+            selected
+              | Just key == value = (! A.selected "selected")
+              | defaulting        = (! A.selected "selected")
+              | otherwise         = id
+        selected $ option ! A.value (toValue key) $ toHtml title
 
 -- | Get the paste id.
 getPasteId :: PasteFormlet -> Maybe PasteId
@@ -233,6 +265,8 @@ pasteNav pastes paste =
     href ("/annotate/" ++ pack (show pid) ++ "") ("Annotate" :: Text)
     " - "
     href ("/report/" ++ pack (show pid) ++ "") ("Report/Delete" :: Text)
+    " - "
+    pasteRawLink paste $ ("Raw" :: Text)
 
     where pid = pasteId paste
           pairs = zip (drop 1 pastes) pastes
