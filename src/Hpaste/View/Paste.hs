@@ -210,7 +210,6 @@ pasteDetails revisions annotations chans langs paste =
       detail "Language" $ showLanguage langs (pasteLanguage paste)
       detail "Channel" $ showChannel (Just paste) chans (pasteChannel paste)
       detail "Created" $ showDateTime (pasteDate paste)
-      detail "Raw" $ pasteRawLink paste $ ("View raw link" :: Text)
       unless (length revisions < 2) $ detail "Revisions" $ do
         br
         ul !. "revisions" $ listRevisions paste revisions
