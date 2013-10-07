@@ -75,4 +75,7 @@ birdStyle = collect mempty (Right []) . map T.unpack . T.lines where
   plaintext = pre . toHtml
   dropSpace (' ':xs) = xs
   dropSpace xs = xs
-  beaks x = "<pre class='bird-code'>" ++ x ++ "\n</pre>"
+  beaks x = "<pre class='bird-code'>" ++ unlines (map beakize (lines x)) ++ "</pre>" where
+    beakize ('<':'p':'r':'e':'>':code) = "<pre><span class='beak'>&gt; </span>" ++ code
+    beakize "</pre>" = "</pre>"
+    beakize code = "<span class='beak'>&gt; </span>" ++ code

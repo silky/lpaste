@@ -153,7 +153,7 @@ pre .hs-comment        { color:#555 }
 pre .hs-keyword        { color:#397460 }
 pre .hs-str            { color:#366354 }
 pre .hs-conid          { color:#4F4371 }
-pre .hs-varop          { color:#333 }
+pre .hs-varop, pre .hs-keyglyph          { color:#8f4e8b }
 pre .hs-varid          { color:#333 }
 pre .hs-num            { color:#4F4371 }
 pre .diff              { color:#555 }
@@ -171,6 +171,7 @@ pre code .header       { color:#555 }
 pre code .deletion     { background-color:#FDD; color:#695B5B }
 pre code .addition     { background-color:#DFD; color:#000 }
 pre                    { margin:0 }
+pre .hs-definition     { color: #2e659c }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* Diffs */
@@ -327,6 +328,7 @@ table td {
 /* Literate haskell bird style */
 
 .bird-code pre {
-  border-left: 0.5em solid #eee;
-  padding-left: 1em;
+}
+.bird-code .beak {
+  color: #aaa;
 }
