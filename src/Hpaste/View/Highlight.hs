@@ -1,5 +1,6 @@
 {-# OPTIONS -Wall -fno-warn-name-shadowing #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
@@ -13,6 +14,7 @@ module Hpaste.View.Highlight
 import           Hpaste.Types
 import           Hpaste.View.Html
 
+import Data.Monoid
 import           Control.Monad
 import           Data.List                     (find)
 import           Data.Monoid.Operator
@@ -35,8 +37,10 @@ highlightPaste langs Paste{..} =
           "\n"
     td $
       case lang of
-        Just (Language{languageName}) 
-         | elem languageName ["haskell","agda","idris"] ->
+        Just (Language{languageName})
+         | languageName == "literatehaskell" ->
+           birdStyle pastePaste
+         | elem languageName ["haskell","agda","idris","elm"] ->
           preEscapedString $ hscolour False (unpack pastePaste)
         Just (Language{..}) ->
           pre $ code ! A.class_ (toValue $ "language-" ++ lang) $
@@ -52,3 +56,23 @@ highlightHaskell :: Text -> Html
 highlightHaskell paste =
   H.table ! aClass "code" $
     td $ preEscapedString $ hscolour False (unpack paste)
+
+birdStyle :: Text -> Html
+birdStyle = collect mempty (Right []) . map T.unpack . T.lines where
+  collect doc acc (('>':(dropSpace -> hsline)):xs) =
+    case acc of
+      Right hslines -> collect doc (Right (hslines ++ hsline ++ "\n")) xs
+      Left text -> collect (doc <> plaintext text) (Right (hsline ++ "\n")) xs
+  collect doc acc (textline:xs) =
+    case acc of
+      Right hslines -> collect (doc <> highlight hslines) (Left (textline ++ "\n")) xs
+      Left text -> collect doc (Left (text ++ textline ++ "\n")) xs
+  collect doc acc [] =
+    case acc of
+      Right hslines -> doc <> highlight hslines
+      Left text -> doc <> plaintext text
+  highlight = preEscapedString . beaks . hscolour False
+  plaintext = pre . toHtml
+  dropSpace (' ':xs) = xs
+  dropSpace xs = xs
+  beaks x = "<pre class='bird-code'>" ++ x ++ "\n</pre>"

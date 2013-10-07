@@ -322,3 +322,11 @@ table td {
   display: inline-block;
   width: 6em;
 }
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+/* Literate haskell bird style */
+
+.bird-code pre {
+  border-left: 0.5em solid #eee;
+  padding-left: 1em;
+}
