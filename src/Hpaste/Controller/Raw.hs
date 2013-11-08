@@ -8,7 +8,7 @@ module Hpaste.Controller.Raw
   (handle)
   where
 
-import Hpaste.Model.Paste   (getPasteById)
+import Hpaste.Model.Paste   (getRevisions)
 import Hpaste.Types
 
 import Control.Applicative
@@ -27,5 +27,5 @@ handle = do
     Nothing -> goHome
     Just (pid :: Integer) -> do
       modifyResponse $ setContentType "text/plain; charset=UTF-8"
-      paste <- model $ getPasteById (PasteId pid)
+      paste <- fmap listToMaybe $ model $ getRevisions (PasteId pid)
       maybe goHome (outputText . fromStrict . pastePaste) paste
