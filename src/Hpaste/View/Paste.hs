@@ -25,6 +25,8 @@ import           Data.ByteString.UTF8        (toString)
 import           Data.List                   (find,nub)
 import qualified Data.Map                    as M
 import           Data.Maybe
+import Network.URI.Params
+import Network.URI
 import           Data.Monoid.Operator        ((++))
 import           Data.Text                   (Text,pack)
 import qualified Data.Text                   as T
@@ -267,6 +269,12 @@ pasteNav pastes paste =
     " - "
     pasteRawLink paste $ ("Raw" :: Text)
 
+    " - "
+    a ! hrefURI' (updateUrlParams [("title",T.unpack (pasteTitle paste))
+                                 ,("paste","http://lpaste.net/raw/" ++ show (pasteId paste))]
+                                 (fromJust (parseURI "https://fpcomplete.com/ide"))) $
+      "Clone in IDE"
+
     where pid = pasteId paste
           pairs = zip (drop 1 pastes) pastes
           parent = fmap snd $ find ((==pid).pasteId.fst) $ pairs
@@ -284,7 +292,12 @@ pasteNav pastes paste =
                   href ("/diff/" ++ show prevId ++ "/" ++ show pid)
                        ("prev" :: Text)
             case listToMaybe pastes of
-              Nothing -> return (); Just{} -> " - "
+              Nothing -> return ()
+              Just{} -> " - "
+
+
+hrefURI' :: URI -> Attribute
+hrefURI' uri = A.href (toValue (show uri)) where
 
 -- | Show the paste content with highlighting.
 pasteContent :: [Paste] -> [Language] -> Paste -> Markup
