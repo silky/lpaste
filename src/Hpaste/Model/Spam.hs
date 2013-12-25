@@ -49,7 +49,7 @@ reportBadScore PasteSubmit{..} score = do
 
 -- | Get the rating from spam assassin.
 getRating :: String -> IO Integer
-getRating mail = do 
+getRating mail = do
   (_,err,_) <- readProcessWithExitCode "spamc" ["-c"] mail
   return $ case reads err of
     [(n :: Double,_)]     -> round (n*10)
@@ -63,12 +63,12 @@ definitelySpam ps =
   T.isInfixOf "stooorage" (allText ps) ||
   T.isInfixOf "http://fur.ly" (allText ps) ||
   T.isInfixOf "anekahosting.com" (allText ps) ||
-  justUrl 
-   where justUrl = 
+  justUrl
+   where justUrl =
    	   (T.isPrefixOf "http://" paste ||
    	    T.isPrefixOf "https://" paste) &&
 	    lineCount == 1
-	 lineCount = length (filter (not . T.null) 
+	 lineCount = length (filter (not . T.null)
                                     (map T.strip
                                          (T.lines paste)))
          paste = T.strip (pasteSubmitPaste ps)
@@ -76,9 +76,10 @@ definitelySpam ps =
 -- | Multiple the rating by weights specific to hpaste.
 weighted :: PasteSubmit -> Integer -> Integer
 weighted ps n = foldr ($) n weights where
-  weights = [if T.isInfixOf "http://" text || T.isInfixOf "https://" text
-  	    	then (+ (20 * fromIntegral (T.count "http://" text + T.count "https://" text))) else id
-            ,if pasteSubmitAuthor ps == "Anonymous Coward" || pasteSubmitAuthor ps == "Anonymous"
+  weights = [-- Commenting out this for now, it catches too many false negatives.
+             -- if T.isInfixOf "http://" text || T.isInfixOf "https://" text
+  	     --    then (+ (20 * fromIntegral (T.count "http://" text + T.count "https://" text))) else id
+             if pasteSubmitAuthor ps == "Anonymous Coward" || pasteSubmitAuthor ps == "Anonymous"
 	    	then (+20) else id
             ]
   text = allText ps

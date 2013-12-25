@@ -107,7 +107,7 @@ showChannel paste channels lid = do
   case (paste,chan) of
     (Just paste,Just c) | c == "#haskell" -> do
       " "
-      href ("http://ircbrowse.net/browse/haskell/?q=hpaste+" ++ show (pasteId paste)) $
+      href ("http://ircbrowse.net/browse/haskell/?q=" ++ show (pasteId paste)) $
         ("Context in IRC logs" :: String)
     _ -> return ()
 
