@@ -16,4 +16,5 @@ import Snap.App
 getChannels :: Model c s [Channel]
 getChannels =
   queryNoParams ["SELECT *"
-                ,"FROM channel"]
+                ,"FROM channel"
+                ,"ORDER by title"]
